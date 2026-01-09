@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../state/app_state.dart';
+import '../features/diagnose/diagnose_page.dart';
 
 class DiagnoseScreen extends StatelessWidget {
   final AppState appState;
@@ -8,14 +9,7 @@ class DiagnoseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Diagnose'),
-      ),
-      body: const Center(
-        child: Text('Diagnose Screen'),
-      ),
-    );
+    return const DiagnosePage();
   }
 }
 

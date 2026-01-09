@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
+import '../screens/my_cars_screen.dart';
 import '../screens/diagnose_screen.dart';
-import '../screens/dashboard_screen.dart';
-import '../screens/insights_screen.dart';
+import '../screens/obd_data_screen.dart';
+import '../screens/account_screen.dart';
 import '../state/app_state.dart';
-import '../utils/app_constants.dart';
+import 'app_bottom_nav.dart';
 
 class NavigationScaffold extends StatefulWidget {
   final AppState appState;
@@ -25,9 +26,10 @@ class _NavigationScaffoldState extends State<NavigationScaffold> {
     super.initState();
     _screens.addAll([
       HomeScreen(appState: widget.appState),
+      MyCarsScreen(appState: widget.appState),
       DiagnoseScreen(appState: widget.appState),
-      DashboardScreen(appState: widget.appState),
-      InsightsScreen(appState: widget.appState),
+      OBDDataScreen(appState: widget.appState),
+      AccountScreen(appState: widget.appState),
     ]);
   }
 
@@ -41,28 +43,9 @@ class _NavigationScaffoldState extends State<NavigationScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: AppBottomNav(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: AppConstants.homeLabel,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: AppConstants.diagnoseLabel,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: AppConstants.dashboardLabel,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.insights),
-            label: AppConstants.insightsLabel,
-          ),
-        ],
       ),
     );
   }

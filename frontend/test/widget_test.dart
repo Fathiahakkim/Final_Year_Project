@@ -9,8 +9,9 @@ void main() {
     await tester.pumpWidget(MyApp(appState: appState));
 
     expect(find.text('Home'), findsOneWidget);
+    expect(find.text('My Cars'), findsOneWidget);
     expect(find.text('Diagnose'), findsOneWidget);
-    expect(find.text('Dashboard'), findsOneWidget);
-    expect(find.text('Insights'), findsOneWidget);
+    expect(find.text('OBD Data'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
   });
 }
