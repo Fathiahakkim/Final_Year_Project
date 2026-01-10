@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../state/app_state.dart';
+import '../features/my_car/my_car_page.dart';
 
 class MyCarsScreen extends StatelessWidget {
   final AppState appState;
@@ -8,13 +9,6 @@ class MyCarsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Cars'),
-      ),
-      body: const Center(
-        child: Text('My Cars Screen'),
-      ),
-    );
+    return const MyCarPage();
   }
 }

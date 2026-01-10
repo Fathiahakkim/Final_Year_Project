@@ -21,11 +21,20 @@ class _NavigationScaffoldState extends State<NavigationScaffold> {
 
   final List<Widget> _screens = [];
 
+  void navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _screens.addAll([
-      HomeScreen(appState: widget.appState),
+      HomeScreen(
+        appState: widget.appState,
+        onNavigate: navigateToTab,
+      ),
       MyCarsScreen(appState: widget.appState),
       DiagnoseScreen(appState: widget.appState),
       OBDDataScreen(appState: widget.appState),

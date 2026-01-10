@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../theme/diagnose_theme.dart';
 
 class VoiceButton extends StatefulWidget {
   final VoidCallback? onTap;
@@ -51,37 +52,40 @@ class _VoiceButtonState extends State<VoiceButton>
             height: 140,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF6A8DFF), Color(0xFF8F6CFF)],
+                colors: [
+                  DiagnoseTheme.accentBlue,
+                  DiagnoseTheme.accentBlue.withBlue(230),
+                ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(
-                    0xFF6A8DFF,
-                  ).withOpacity(0.6 * _glowAnimation.value),
+                  color: DiagnoseTheme.accentBlue.withOpacity(
+                    0.6 * _glowAnimation.value,
+                  ),
                   blurRadius: 50 * _pulseAnimation.value,
                   spreadRadius: 6 * _pulseAnimation.value,
                 ),
                 BoxShadow(
-                  color: const Color(
-                    0xFF8F6CFF,
-                  ).withOpacity(0.5 * _glowAnimation.value),
+                  color: DiagnoseTheme.accentBlue.withOpacity(
+                    0.5 * _glowAnimation.value,
+                  ),
                   blurRadius: 45 * _pulseAnimation.value,
                   spreadRadius: 5 * _pulseAnimation.value,
                 ),
                 BoxShadow(
-                  color: const Color(
-                    0xFF6A8DFF,
-                  ).withOpacity(0.4 * _glowAnimation.value),
+                  color: DiagnoseTheme.accentBlue.withOpacity(
+                    0.4 * _glowAnimation.value,
+                  ),
                   blurRadius: 35 * _pulseAnimation.value,
                   spreadRadius: 3 * _pulseAnimation.value,
                 ),
                 BoxShadow(
-                  color: const Color(
-                    0xFF8F6CFF,
-                  ).withOpacity(0.3 * _glowAnimation.value),
+                  color: DiagnoseTheme.accentBlue.withOpacity(
+                    0.3 * _glowAnimation.value,
+                  ),
                   blurRadius: 25 * _pulseAnimation.value,
                   spreadRadius: 2 * _pulseAnimation.value,
                 ),
