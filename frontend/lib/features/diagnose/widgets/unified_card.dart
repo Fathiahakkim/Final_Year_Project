@@ -55,6 +55,7 @@ class UnifiedCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: [
+              // Complaint box - STATIC at top
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Column(
@@ -103,146 +104,169 @@ class UnifiedCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Show diagnosis results if available - Flexible section
-              if (controller.diagnosisResult != null)
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: DiagnosisResultWidget(
-                      diagnosisResult: controller.diagnosisResult!,
-                    ),
-                  ),
-                )
-              else if (controller.isLoading)
-                Flexible(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        DiagnoseTheme.accentBlue,
-                      ),
-                    ),
-                  ),
-                )
-              else if (controller.errorMessage != null)
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 16),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Error: ${controller.errorMessage}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.red,
+              // Results section - EXPANDABLE in middle (takes available space)
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Show diagnosis results if available
+                      if (controller.diagnosisResult != null)
+                        DiagnosisResultWidget(
+                          diagnosisResult: controller.diagnosisResult!,
+                        )
+                      else if (controller.isLoading || controller.messageSent)
+                        // Show processing state when loading or when message sent but no results yet
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  DiagnoseTheme.accentBlue,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Processing...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: DiagnoseTheme.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Analyzing your complaint',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: DiagnoseTheme.textSecondary
+                                      .withOpacity(0.7),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        )
+                      else if (controller.errorMessage != null)
+                        Container(
+                          margin: const EdgeInsets.only(top: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Error: ${controller.errorMessage}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
-                )
-              else if (controller.messageSent)
-                // Empty space when message sent but no results yet
-                const Flexible(child: SizedBox.shrink())
-              else
-                const SizedBox.shrink(),
-              // Message input box - ALWAYS STATIC with consistent margins
-              Container(
-                height: 44,
-                margin: const EdgeInsets.only(
-                  top: 12,
-                  bottom: 8,
-                  left: 16,
-                  right: 16,
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F6FA),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: messageController,
-                        onChanged: (text) {
-                          // Notify to update icon based on text
-                          controller.notifyListeners();
-                        },
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: DiagnoseTheme.textPrimary,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Type your message',
-                          hintStyle: TextStyle(
-                            color: DiagnoseTheme.textSecondary,
-                            fontSize: 16,
+              ),
+              // Message input box - ALWAYS STATIC at bottom
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return Container(
+                    height: 44,
+                    margin: const EdgeInsets.only(
+                      top: 12,
+                      bottom: 8,
+                      left: 16,
+                      right: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F6FA),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: messageController,
+                            onChanged: (text) {
+                              // Update icon when text changes
+                              setState(() {});
+                            },
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: DiagnoseTheme.textPrimary,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Type your message',
+                              hintStyle: TextStyle(
+                                color: DiagnoseTheme.textSecondary,
+                                fontSize: 16,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            cursorColor: DiagnoseTheme.accentBlue,
                           ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
                         ),
-                        cursorColor: DiagnoseTheme.accentBlue,
-                      ),
-                    ),
-                    // Show voice icon when empty, send icon when text entered (WhatsApp style)
-                    Builder(
-                      builder: (context) {
-                        final hasText =
-                            messageController.text.trim().isNotEmpty;
-                        final isLoading = controller.isLoading;
+                        // Show voice icon when empty, send icon when text entered (WhatsApp style)
+                        Builder(
+                          builder: (context) {
+                            final hasText =
+                                messageController.text.trim().isNotEmpty;
+                            final isLoading = controller.isLoading;
 
-                        return IconButton(
-                          onPressed:
-                              isLoading
-                                  ? null
-                                  : (hasText ? onSend : onVoiceTap),
-                          icon:
-                              isLoading
-                                  ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        DiagnoseTheme.accentBlue,
-                                      ),
-                                    ),
-                                  )
-                                  : (hasText
-                                      ? const Icon(
-                                        Icons.send,
-                                        color: DiagnoseTheme.accentBlue,
-                                        size: 24,
+                            return IconButton(
+                              onPressed:
+                                  isLoading
+                                      ? null
+                                      : (hasText ? onSend : onVoiceTap),
+                              icon:
+                                  isLoading
+                                      ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                DiagnoseTheme.accentBlue,
+                                              ),
+                                        ),
                                       )
-                                      : const Icon(
-                                        Icons.mic,
-                                        color: DiagnoseTheme.accentBlue,
-                                        size: 24,
-                                      )),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        );
-                      },
+                                      : (hasText
+                                          ? const Icon(
+                                            Icons.send,
+                                            color: DiagnoseTheme.accentBlue,
+                                            size: 24,
+                                          )
+                                          : const Icon(
+                                            Icons.mic,
+                                            color: DiagnoseTheme.accentBlue,
+                                            size: 24,
+                                          )),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),

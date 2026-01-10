@@ -21,16 +21,6 @@ class DiagnosisResultWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 16),
-        Text(
-          'DIAGNOSIS RESULTS',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: DiagnoseTheme.textSecondary,
-            letterSpacing: 1.2,
-          ),
-        ),
-        const SizedBox(height: 12),
         ...diagnosisResult.issues.asMap().entries.map((entry) {
           final index = entry.key;
           final issue = entry.value;
@@ -53,97 +43,82 @@ class _IssueItem extends StatelessWidget {
     required this.index,
   });
 
-  Color _getSeverityColor() {
-    switch (issue.severity) {
-      case IssueSeverity.critical:
-        return const Color(0xFFE53935); // Red
-      case IssueSeverity.warning:
-        return const Color(0xFFFF9800); // Orange
+  // Get icon based on issue name or index
+  IconData _getIssueIcon() {
+    final name = issue.name.toLowerCase();
+    if (name.contains('misfire') || name.contains('engine')) {
+      return Icons.local_fire_department; // Flame icon for engine misfire
+    } else if (name.contains('spark') || name.contains('plug')) {
+      return Icons.bolt; // Spark plug icon
+    } else if (name.contains('fuel') || name.contains('injector')) {
+      return Icons.chat_bubble_outline; // Chat/speech bubble for fuel injector
+    } else {
+      return Icons.build; // Default icon
     }
   }
 
-  IconData _getSeverityIcon() {
-    switch (issue.severity) {
-      case IssueSeverity.critical:
-        return Icons.build;
-      case IssueSeverity.warning:
-        return Icons.warning_amber_rounded;
-    }
+  // Always use blue color to match the design
+  Color _getIconColor() {
+    return DiagnoseTheme.accentBlue;
   }
 
   @override
   Widget build(BuildContext context) {
-    final severityColor = _getSeverityColor();
-    final severityIcon = _getSeverityIcon();
     final confidencePercentage = issue.confidencePercentage;
+    final icon = _getIssueIcon();
+    final iconColor = _getIconColor();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F6FA),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: severityColor.withOpacity(0.2),
-          width: 1,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Row with icon, text, and percentage
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: severityColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: severityColor.withOpacity(0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  severityIcon,
-                  color: severityColor,
-                  size: 20,
-                ),
+              // Icon on the left
+              Icon(
+                icon,
+                color: iconColor,
+                size: 24,
               ),
               const SizedBox(width: 12),
+              // Issue name in the middle
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      issue.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: DiagnoseTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$confidencePercentage%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: DiagnoseTheme.textSecondary,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  issue.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: DiagnoseTheme.textPrimary,
+                  ),
+                ),
+              ),
+              // Percentage on the right
+              Text(
+                '$confidencePercentage%',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: DiagnoseTheme.textSecondary,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
+          // Progress bar below
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: issue.confidence,
-              backgroundColor: Colors.grey.withOpacity(0.2),
-              valueColor: AlwaysStoppedAnimation<Color>(severityColor),
+              backgroundColor: const Color(0xFFE5E5E5),
+              valueColor: AlwaysStoppedAnimation<Color>(iconColor),
               minHeight: 6,
             ),
           ),

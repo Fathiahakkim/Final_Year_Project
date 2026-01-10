@@ -118,9 +118,36 @@ class DiagnoseHandlers {
 
       controller.setDiagnosisResult(sortedResult);
     } catch (e) {
-      controller.setError(e.toString());
-      // Optionally show error to user
-      print('Diagnosis error: $e');
+      // For testing: Show dummy data if backend fails
+      // TODO: Remove this dummy data when backend is connected
+      await Future.delayed(const Duration(seconds: 2)); // Simulate delay
+      
+      final dummyResult = DiagnosisResult(
+        issues: [
+          DiagnosedIssue(
+            name: 'Engine Misfire',
+            confidence: 0.97,
+            severity: IssueSeverity.critical,
+          ),
+          DiagnosedIssue(
+            name: 'Faulty Spark Plug',
+            confidence: 0.72,
+            severity: IssueSeverity.warning,
+          ),
+          DiagnosedIssue(
+            name: 'Fuel Injector Issue',
+            confidence: 0.65,
+            severity: IssueSeverity.warning,
+          ),
+        ],
+        timestamp: DateTime.now(),
+      );
+      
+      controller.setDiagnosisResult(dummyResult);
+      
+      // Uncomment below when backend is ready:
+      // controller.setError(e.toString());
+      // print('Diagnosis error: $e');
     }
   }
 }
