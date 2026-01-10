@@ -9,6 +9,7 @@ class UnifiedCard extends StatelessWidget {
   final TextEditingController messageController;
   final ValueChanged<String>? onComplaintChanged;
   final VoidCallback? onSend;
+  final VoidCallback? onVoiceTap;
 
   const UnifiedCard({
     super.key,
@@ -17,12 +18,14 @@ class UnifiedCard extends StatelessWidget {
     required this.messageController,
     this.onComplaintChanged,
     this.onSend,
+    this.onVoiceTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Listen to both controller and messageController for icon updates
     return ListenableBuilder(
-      listenable: controller,
+      listenable: Listenable.merge([controller, messageController]),
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
@@ -100,7 +103,7 @@ class UnifiedCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Show diagnosis results if available
+              // Show diagnosis results if available - Flexible section
               if (controller.diagnosisResult != null)
                 Flexible(
                   child: SingleChildScrollView(
@@ -112,14 +115,10 @@ class UnifiedCard extends StatelessWidget {
                 )
               else if (controller.isLoading)
                 Flexible(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 16),
-                    padding: const EdgeInsets.all(16),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          DiagnoseTheme.accentBlue,
-                        ),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        DiagnoseTheme.accentBlue,
                       ),
                     ),
                   ),
@@ -156,13 +155,18 @@ class UnifiedCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              // Message input box - minimal bottom padding, flush with card edges
+                )
+              else if (controller.messageSent)
+                // Empty space when message sent but no results yet
+                const Flexible(child: SizedBox.shrink())
+              else
+                const SizedBox.shrink(),
+              // Message input box - ALWAYS STATIC with consistent margins
               Container(
                 height: 44,
                 margin: const EdgeInsets.only(
                   top: 12,
-                  bottom: 0,
+                  bottom: 8,
                   left: 16,
                   right: 16,
                 ),
@@ -176,6 +180,10 @@ class UnifiedCard extends StatelessWidget {
                     Expanded(
                       child: TextField(
                         controller: messageController,
+                        onChanged: (text) {
+                          // Notify to update icon based on text
+                          controller.notifyListeners();
+                        },
                         style: const TextStyle(
                           fontSize: 16,
                           color: DiagnoseTheme.textPrimary,
@@ -193,27 +201,45 @@ class UnifiedCard extends StatelessWidget {
                         cursorColor: DiagnoseTheme.accentBlue,
                       ),
                     ),
-                    IconButton(
-                      onPressed: controller.isLoading ? null : onSend,
-                      icon:
-                          controller.isLoading
-                              ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    DiagnoseTheme.accentBlue,
-                                  ),
-                                ),
-                              )
-                              : const Icon(
-                                Icons.send,
-                                color: DiagnoseTheme.accentBlue,
-                                size: 24,
-                              ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    // Show voice icon when empty, send icon when text entered (WhatsApp style)
+                    Builder(
+                      builder: (context) {
+                        final hasText =
+                            messageController.text.trim().isNotEmpty;
+                        final isLoading = controller.isLoading;
+
+                        return IconButton(
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : (hasText ? onSend : onVoiceTap),
+                          icon:
+                              isLoading
+                                  ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        DiagnoseTheme.accentBlue,
+                                      ),
+                                    ),
+                                  )
+                                  : (hasText
+                                      ? const Icon(
+                                        Icons.send,
+                                        color: DiagnoseTheme.accentBlue,
+                                        size: 24,
+                                      )
+                                      : const Icon(
+                                        Icons.mic,
+                                        color: DiagnoseTheme.accentBlue,
+                                        size: 24,
+                                      )),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        );
+                      },
                     ),
                   ],
                 ),

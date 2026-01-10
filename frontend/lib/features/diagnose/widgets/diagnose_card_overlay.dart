@@ -26,17 +26,19 @@ class DiagnoseCardOverlay extends StatelessWidget {
       listenable: controller,
       builder: (context, child) {
         // Calculate dynamic height based on diagnosis state
-        // If there are results, expand to cover more of the screen (including mic)
-        // Otherwise use the base card height
+        // Card should only expand when there are results to show or when loading
+        // NOT just because message was sent - keeps message input in same position
         final hasResults = controller.diagnosisResult != null;
         final isLoading = controller.isLoading;
 
         double dynamicHeight;
         if (hasResults || isLoading) {
           // Expand to cover mic - use larger portion of screen
+          // Only expand when there are actual results or loading
           dynamicHeight = screenHeight * 0.65;
         } else {
-          // Normal height when no results
+          // Normal height when no results and not loading
+          // This keeps message input at consistent position even on error
           dynamicHeight = cardHeight;
         }
 
@@ -54,6 +56,7 @@ class DiagnoseCardOverlay extends StatelessWidget {
               messageController: controller.messageController,
               onComplaintChanged: handlers.onComplaintChanged,
               onSend: handlers.onSend,
+              onVoiceTap: handlers.onVoiceTap,
             ),
           ),
         );

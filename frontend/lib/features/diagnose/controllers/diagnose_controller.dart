@@ -13,11 +13,13 @@ class DiagnoseController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _displayedComplaint = '';
+  bool _messageSent = false; // Track if message was sent to keep card expanded
 
   DiagnosisResult? get diagnosisResult => _diagnosisResult;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String get displayedComplaint => _displayedComplaint;
+  bool get messageSent => _messageSent;
 
   void initializeComplaintSelection() {
     complaintController.selection = TextSelection.collapsed(
@@ -49,10 +51,16 @@ class DiagnoseController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setMessageSent(bool sent) {
+    _messageSent = sent;
+    notifyListeners();
+  }
+
   void clearDiagnosis() {
     _diagnosisResult = null;
     _errorMessage = null;
     _isLoading = false;
+    _messageSent = false;
     notifyListeners();
   }
 
