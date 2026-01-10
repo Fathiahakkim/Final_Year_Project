@@ -1,21 +1,34 @@
 class DiagnosisResult {
   final List<DiagnosedIssue> issues;
   final DateTime timestamp;
+  final SuppressionInfo? suppressionApplied;
 
   DiagnosisResult({
     required this.issues,
     required this.timestamp,
+    this.suppressionApplied,
   });
 
   factory DiagnosisResult.fromJson(Map<String, dynamic> json) {
     return DiagnosisResult(
-      issues: (json['issues'] as List<dynamic>?)
-              ?.map((issue) => DiagnosedIssue.fromJson(issue as Map<String, dynamic>))
+      issues:
+          (json['issues'] as List<dynamic>?)
+              ?.map(
+                (issue) =>
+                    DiagnosedIssue.fromJson(issue as Map<String, dynamic>),
+              )
               .toList() ??
           [],
-      timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
-          : DateTime.now(),
+      timestamp:
+          json['timestamp'] != null
+              ? DateTime.parse(json['timestamp'])
+              : DateTime.now(),
+      suppressionApplied:
+          json['suppression_applied'] != null
+              ? SuppressionInfo.fromJson(
+                json['suppression_applied'] as Map<String, dynamic>,
+              )
+              : null,
     );
   }
 
@@ -23,6 +36,32 @@ class DiagnosisResult {
     return {
       'issues': issues.map((issue) => issue.toJson()).toList(),
       'timestamp': timestamp.toIso8601String(),
+      if (suppressionApplied != null)
+        'suppression_applied': suppressionApplied!.toJson(),
+    };
+  }
+}
+
+class SuppressionInfo {
+  final bool unknownSuppressed;
+  final bool otherSuppressed;
+
+  SuppressionInfo({
+    required this.unknownSuppressed,
+    required this.otherSuppressed,
+  });
+
+  factory SuppressionInfo.fromJson(Map<String, dynamic> json) {
+    return SuppressionInfo(
+      unknownSuppressed: json['unknown_suppressed'] as bool? ?? false,
+      otherSuppressed: json['other_suppressed'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'unknown_suppressed': unknownSuppressed,
+      'other_suppressed': otherSuppressed,
     };
   }
 }
@@ -72,7 +111,4 @@ class DiagnosedIssue {
   int get confidencePercentage => (confidence * 100).round();
 }
 
-enum IssueSeverity {
-  critical,
-  warning,
-}
+enum IssueSeverity { critical, warning }

@@ -3,8 +3,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import diagnose
+from app.api.routes import diagnose, transcribe
 from app.models.predictor import Predictor, ModelLoadError
+from app.services.whisper_service import WhisperService
 import logging
 
 # Configure logging
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup and shutdown events.
-    Loads ML model on startup and stores it in app.state.
+    Loads ML model and Whisper service on startup and stores them in app.state.
     """
     # Startup: Load predictor
     logger.info("Loading ML models...")
@@ -36,6 +37,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Unexpected error loading models: {e}")
         app.state.predictor = None
+    
+    # Startup: Load Whisper service
+    # logger.info("Loading Whisper service...")
+    # try:
+    #     whisper_service = WhisperService(model_name="large", fp16=False)
+    #     app.state.whisper_service = whisper_service
+    #     logger.info("Successfully loaded Whisper service with 'large' model")
+    # except Exception as e:
+    #     logger.error(f"Failed to load Whisper service: {e}")
+    #     logger.error("API will start but /api/v1/transcribe will not work until Whisper is available.")
+    #     app.state.whisper_service = None
+    app.state.whisper_service = None
     
     yield
     
@@ -62,6 +75,7 @@ app.add_middleware(
 
 # Register API routes
 app.include_router(diagnose.router)
+app.include_router(transcribe.router)
 
 
 @app.get("/")
@@ -71,7 +85,8 @@ async def root():
         "message": "AI-Based Automotive Fault Detection API",
         "version": "1.0.0",
         "docs": "/docs",
-        "model_loaded": app.state.predictor is not None
+        "model_loaded": app.state.predictor is not None,
+        "whisper_loaded": app.state.whisper_service is not None
     }
 
 
@@ -80,6 +95,7 @@ async def health_check():
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "model_loaded": app.state.predictor is not None
+        "model_loaded": app.state.predictor is not None,
+        "whisper_loaded": app.state.whisper_service is not None
     }
 

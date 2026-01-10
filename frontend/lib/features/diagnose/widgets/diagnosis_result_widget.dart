@@ -91,13 +91,25 @@ class _IssueItem extends StatelessWidget {
               const SizedBox(width: 12),
               // Issue name in the middle
               Expanded(
-                child: Text(
-                  issue.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: DiagnoseTheme.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      issue.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: DiagnoseTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      issue.severity.toString().split('.').last,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: DiagnoseTheme.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // Percentage on the right

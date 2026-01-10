@@ -9,7 +9,7 @@ class DiagnoseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DiagnosePage();
+    return DiagnosePage(appState: appState);
   }
 }
 

@@ -3,25 +3,27 @@ import 'package:http/http.dart' as http;
 import '../models/diagnosis_result_model.dart';
 
 class DiagnosisService {
-  static const String baseUrl = 'http://localhost:8000'; // Update with your backend URL
+  // IMPORTANT: Replace with your PC's local IPv4 address for Android device testing
+  // Example: 'http://192.168.1.5:8000'
+  // Find your PC IP: Windows (ipconfig) or Linux/Mac (ifconfig)
+  static const String baseUrl =
+      'http://192.168.29.196:8000'; // TODO: Update with your PC's actual IP address
   static const String endpoint = '/api/diagnose';
   static const Duration timeout = Duration(seconds: 30);
 
   Future<DiagnosisResult> diagnoseComplaint(String complaint) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      
+
       final response = await http
           .post(
             uri,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: jsonEncode({
-              'complaint': complaint,
-            }),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'complaint': complaint}),
           )
           .timeout(timeout);
+
+      print('RAW BACKEND RESPONSE: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;

@@ -74,3 +74,12 @@ class DiagnosisResponse(BaseModel):
         }
     )
 
+
+class TranscriptionResponse(BaseModel):
+    """Response schema for transcription endpoint."""
+    
+    text: str = Field(
+        ...,
+        description="Transcribed text from audio file",
+        example="My car engine is making a strange noise when I accelerate"
+    )
