@@ -76,30 +76,12 @@ class _CarVisualState extends State<CarVisual>
                           borderRadius: BorderRadius.circular(20),
                           color: Colors.transparent,
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Placeholder car icon
-                            Icon(
-                              Icons.directions_car,
-                              size: 120,
-                              color: DiagnoseTheme.accentBlue.withOpacity(
-                                0.5,
-                              ),
-                            ),
-                            // Hint text
-                            Positioned(
-                              bottom: 20,
-                              child: Text(
-                                'Add car.png to assets/images/',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.5),
-                                  fontSize: 10,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
+                        child: Center(
+                          child: Icon(
+                            Icons.directions_car,
+                            size: 120,
+                            color: DiagnoseTheme.accentBlue.withOpacity(0.5),
+                          ),
                         ),
                       );
                     },
