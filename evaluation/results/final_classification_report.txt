@@ -1,0 +1,90 @@
+======================================================================
+FINAL BASELINE MODEL EVALUATION REPORT
+======================================================================
+
+Accuracy: 0.6442
+Macro F1-score: 0.5783
+Weighted F1-score: 0.6404
+Total Test Samples: 48466
+
+----------------------------------------------------------------------
+CLASSIFICATION REPORT
+----------------------------------------------------------------------
+
+                                    precision    recall  f1-score   support
+
+                          AIR BAGS       0.84      0.84      0.84      1805
+              BACK OVER PREVENTION       0.76      0.54      0.63       387
+                        Chest Clip       1.00      0.13      0.24        15
+                 ELECTRICAL SYSTEM       0.56      0.64      0.59      7613
+ELECTRONIC STABILITY CONTROL (ESC)       0.67      0.03      0.06       131
+                            ENGINE       0.65      0.75      0.70      6039
+         ENGINE AND ENGINE COOLING       0.76      0.76      0.76      1183
+                         EQUIPMENT       0.83      0.27      0.40       131
+                 EXTERIOR LIGHTING       0.83      0.73      0.78      1010
+       FORWARD COLLISION AVOIDANCE       0.52      0.53      0.53      1040
+                       FUEL SYSTEM       0.89      0.84      0.87       712
+            FUEL/PROPULSION SYSTEM       0.67      0.52      0.59      1261
+                    LANE DEPARTURE       0.41      0.18      0.25       218
+            LATCHES/LOCKS/LINKAGES       0.79      0.39      0.52       188
+                     PARKING BRAKE       0.88      0.16      0.26        45
+                       POWER TRAIN       0.66      0.71      0.69      6932
+                        RARE_OTHER       0.60      0.06      0.11        51
+                        SEAT BELTS       0.87      0.79      0.83       465
+                             SEATS       0.79      0.65      0.71       332
+                    SERVICE BRAKES       0.70      0.73      0.72      3031
+                          STEERING       0.84      0.79      0.82      3674
+                         STRUCTURE       0.64      0.59      0.62      1985
+                        SUSPENSION       0.72      0.51      0.60       871
+                             TIRES       0.74      0.75      0.75       359
+                   TRAILER HITCHES       0.94      0.53      0.68        32
+                  UNKNOWN OR OTHER       0.38      0.36      0.37      5265
+             VEHICLE SPEED CONTROL       0.46      0.31      0.37      1217
+                        VISIBILITY       0.83      0.61      0.70       429
+                  VISIBILITY/WIPER       0.72      0.72      0.72      1527
+                            WHEELS       0.72      0.61      0.66       518
+
+                          accuracy                           0.64     48466
+                         macro avg       0.72      0.54      0.58     48466
+                      weighted avg       0.65      0.64      0.64     48466
+
+======================================================================
+Per-class details:
+======================================================================
+
+Class                          Precision    Recall       F1-Score     Support     
+----------------------------------------------------------------------
+AIR BAGS                       0.8375       0.8393       0.8384       1805        
+BACK OVER PREVENTION           0.7636       0.5426       0.6344       387         
+Chest Clip                     1.0000       0.1333       0.2353       15          
+ELECTRICAL SYSTEM              0.5568       0.6363       0.5939       7613        
+ELECTRONIC STABILITY CONTROL (ESC) 0.6667       0.0305       0.0584       131         
+ENGINE                         0.6544       0.7485       0.6983       6039        
+ENGINE AND ENGINE COOLING      0.7559       0.7616       0.7587       1183        
+EQUIPMENT                      0.8333       0.2672       0.4046       131         
+EXTERIOR LIGHTING              0.8313       0.7317       0.7783       1010        
+FORWARD COLLISION AVOIDANCE    0.5226       0.5346       0.5285       1040        
+FUEL SYSTEM                    0.8891       0.8441       0.8660       712         
+FUEL/PROPULSION SYSTEM         0.6721       0.5234       0.5885       1261        
+LANE DEPARTURE                 0.4062       0.1789       0.2484       218         
+LATCHES/LOCKS/LINKAGES         0.7872       0.3936       0.5248       188         
+PARKING BRAKE                  0.8750       0.1556       0.2642       45          
+POWER TRAIN                    0.6607       0.7138       0.6862       6932        
+RARE_OTHER                     0.6000       0.0588       0.1071       51          
+SEAT BELTS                     0.8741       0.7914       0.8307       465         
+SEATS                          0.7904       0.6476       0.7119       332         
+SERVICE BRAKES                 0.7014       0.7347       0.7177       3031        
+STEERING                       0.8406       0.7910       0.8150       3674        
+STRUCTURE                      0.6404       0.5940       0.6163       1985        
+SUSPENSION                     0.7217       0.5121       0.5991       871         
+TIRES                          0.7418       0.7521       0.7469       359         
+TRAILER HITCHES                0.9444       0.5312       0.6800       32          
+UNKNOWN OR OTHER               0.3798       0.3578       0.3685       5265        
+VEHICLE SPEED CONTROL          0.4594       0.3114       0.3712       1217        
+VISIBILITY                     0.8265       0.6107       0.7024       429         
+VISIBILITY/WIPER               0.7183       0.7164       0.7174       1527        
+WHEELS                         0.7192       0.6081       0.6590       518         
+
+----------------------------------------------------------------------
+macro avg                      0.7223       0.5351       0.5783       48466       
+weighted avg                   0.6461       0.6442       0.6404       48466       

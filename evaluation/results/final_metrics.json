@@ -1,0 +1,200 @@
+{
+  "accuracy": 0.6441629183345026,
+  "macro_f1": 0.5783396301694592,
+  "weighted_f1": 0.6403996637526852,
+  "classification_report": {
+    "AIR BAGS": {
+      "precision": 0.8374792703150912,
+      "recall": 0.8393351800554016,
+      "f1-score": 0.8384061981184283,
+      "support": 1805.0
+    },
+    "BACK OVER PREVENTION": {
+      "precision": 0.7636363636363637,
+      "recall": 0.5426356589147286,
+      "f1-score": 0.6344410876132931,
+      "support": 387.0
+    },
+    "Chest Clip": {
+      "precision": 1.0,
+      "recall": 0.13333333333333333,
+      "f1-score": 0.23529411764705882,
+      "support": 15.0
+    },
+    "ELECTRICAL SYSTEM": {
+      "precision": 0.5567816091954023,
+      "recall": 0.6362800472875345,
+      "f1-score": 0.5938821798565561,
+      "support": 7613.0
+    },
+    "ELECTRONIC STABILITY CONTROL (ESC)": {
+      "precision": 0.6666666666666666,
+      "recall": 0.030534351145038167,
+      "f1-score": 0.058394160583941604,
+      "support": 131.0
+    },
+    "ENGINE": {
+      "precision": 0.6544085710149125,
+      "recall": 0.748468289451896,
+      "f1-score": 0.6982851846130079,
+      "support": 6039.0
+    },
+    "ENGINE AND ENGINE COOLING": {
+      "precision": 0.7558724832214765,
+      "recall": 0.7616229923922232,
+      "f1-score": 0.7587368421052632,
+      "support": 1183.0
+    },
+    "EQUIPMENT": {
+      "precision": 0.8333333333333334,
+      "recall": 0.26717557251908397,
+      "f1-score": 0.4046242774566474,
+      "support": 131.0
+    },
+    "EXTERIOR LIGHTING": {
+      "precision": 0.8312710911136107,
+      "recall": 0.7316831683168317,
+      "f1-score": 0.7783043707214323,
+      "support": 1010.0
+    },
+    "FORWARD COLLISION AVOIDANCE": {
+      "precision": 0.5225563909774437,
+      "recall": 0.5346153846153846,
+      "f1-score": 0.5285171102661597,
+      "support": 1040.0
+    },
+    "FUEL SYSTEM": {
+      "precision": 0.8890532544378699,
+      "recall": 0.8441011235955056,
+      "f1-score": 0.8659942363112392,
+      "support": 712.0
+    },
+    "FUEL/PROPULSION SYSTEM": {
+      "precision": 0.6720977596741344,
+      "recall": 0.5233941316415543,
+      "f1-score": 0.5884975479268837,
+      "support": 1261.0
+    },
+    "LANE DEPARTURE": {
+      "precision": 0.40625,
+      "recall": 0.17889908256880735,
+      "f1-score": 0.2484076433121019,
+      "support": 218.0
+    },
+    "LATCHES/LOCKS/LINKAGES": {
+      "precision": 0.7872340425531915,
+      "recall": 0.39361702127659576,
+      "f1-score": 0.524822695035461,
+      "support": 188.0
+    },
+    "PARKING BRAKE": {
+      "precision": 0.875,
+      "recall": 0.15555555555555556,
+      "f1-score": 0.2641509433962264,
+      "support": 45.0
+    },
+    "POWER TRAIN": {
+      "precision": 0.6607023634664174,
+      "recall": 0.7137911136757069,
+      "f1-score": 0.6862214825601554,
+      "support": 6932.0
+    },
+    "RARE_OTHER": {
+      "precision": 0.6,
+      "recall": 0.058823529411764705,
+      "f1-score": 0.10714285714285714,
+      "support": 51.0
+    },
+    "SEAT BELTS": {
+      "precision": 0.8741092636579573,
+      "recall": 0.7913978494623656,
+      "f1-score": 0.8306997742663657,
+      "support": 465.0
+    },
+    "SEATS": {
+      "precision": 0.7904411764705882,
+      "recall": 0.6475903614457831,
+      "f1-score": 0.7119205298013245,
+      "support": 332.0
+    },
+    "SERVICE BRAKES": {
+      "precision": 0.7014173228346456,
+      "recall": 0.7347410095677994,
+      "f1-score": 0.7176925555913632,
+      "support": 3031.0
+    },
+    "STEERING": {
+      "precision": 0.8406132484813422,
+      "recall": 0.7909635274904736,
+      "f1-score": 0.81503295470481,
+      "support": 3674.0
+    },
+    "STRUCTURE": {
+      "precision": 0.6404128191200434,
+      "recall": 0.5939546599496222,
+      "f1-score": 0.6163094615786723,
+      "support": 1985.0
+    },
+    "SUSPENSION": {
+      "precision": 0.7216828478964401,
+      "recall": 0.5120551090700345,
+      "f1-score": 0.5990597716588314,
+      "support": 871.0
+    },
+    "TIRES": {
+      "precision": 0.7417582417582418,
+      "recall": 0.7520891364902507,
+      "f1-score": 0.7468879668049793,
+      "support": 359.0
+    },
+    "TRAILER HITCHES": {
+      "precision": 0.9444444444444444,
+      "recall": 0.53125,
+      "f1-score": 0.68,
+      "support": 32.0
+    },
+    "UNKNOWN OR OTHER": {
+      "precision": 0.3797621447288853,
+      "recall": 0.3578347578347578,
+      "f1-score": 0.36847252102483863,
+      "support": 5265.0
+    },
+    "VEHICLE SPEED CONTROL": {
+      "precision": 0.4593939393939394,
+      "recall": 0.3114215283483977,
+      "f1-score": 0.3712047012732615,
+      "support": 1217.0
+    },
+    "VISIBILITY": {
+      "precision": 0.8264984227129337,
+      "recall": 0.6107226107226107,
+      "f1-score": 0.7024128686327078,
+      "support": 429.0
+    },
+    "VISIBILITY/WIPER": {
+      "precision": 0.7183191070256073,
+      "recall": 0.7164374590700721,
+      "f1-score": 0.7173770491803279,
+      "support": 1527.0
+    },
+    "WHEELS": {
+      "precision": 0.7191780821917808,
+      "recall": 0.6081081081081081,
+      "f1-score": 0.6589958158995816,
+      "support": 518.0
+    },
+    "accuracy": 0.6441629183345026,
+    "macro avg": {
+      "precision": 0.7223458086774255,
+      "recall": 0.5350810551105739,
+      "f1-score": 0.5783396301694592,
+      "support": 48466.0
+    },
+    "weighted avg": {
+      "precision": 0.6461403156326759,
+      "recall": 0.6441629183345026,
+      "f1-score": 0.6403996637526852,
+      "support": 48466.0
+    }
+  }
+}
