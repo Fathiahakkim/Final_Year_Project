@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../utils/diagnose_spacing.dart';
 import 'car_visual.dart';
@@ -111,7 +112,9 @@ class DiagnoseFixedContent extends StatelessWidget {
             child: Center(
               child: VoiceButton(
                 key: controller.micKey,
-                onTap: handlers.onVoiceTap,
+                onTap: () {
+                  debugPrint('VOICE UI: mic tapped (no logic attached)');
+                },
               ),
             ),
           ),

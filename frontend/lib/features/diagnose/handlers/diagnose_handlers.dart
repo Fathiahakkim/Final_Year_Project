@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../../../services/diagnosis_service.dart';
-import '../../../services/voice_recorder_service.dart';
-import '../../../services/transcription_service.dart';
 import '../../../models/diagnosis_result_model.dart';
 import '../../../models/diagnosis_history_entry.dart';
 import '../../../state/app_state.dart';
@@ -13,62 +11,16 @@ class DiagnoseHandlers {
   final DiagnoseController controller;
   final AppState appState;
   final DiagnosisService _diagnosisService = DiagnosisService();
-  final TranscriptionService _transcriptionService = TranscriptionService();
-  // Injected from lifecycle owner (DiagnosePage), not created here
-  final VoiceRecorderService _voiceRecorderService;
 
-  DiagnoseHandlers(this.controller, this.appState, this._voiceRecorderService);
+  DiagnoseHandlers(this.controller, this.appState);
 
-  Future<void> initializeVoiceRecorder() async {
-    try {
-      await _voiceRecorderService.init();
-    } catch (e) {
-      debugPrint('Failed to initialize voice recorder: $e');
-    }
+  /// Updates complaint text from voice transcription WITHOUT triggering diagnosis.
+  /// This function ONLY updates UI state and logs the action.
+  void setComplaintTextFromVoice(String text) {
+    debugPrint('VOICE UI: setComplaintTextFromVoice called with text: "$text"');
+    controller.complaintController.text = text;
+    // Explicitly do NOT trigger diagnosis here - only UI update
   }
-
-  Future<void> onVoiceTap() async {
-    if (_voiceRecorderService.isRecording) {
-      // Second tap: Stop recording
-      await stopRecordingAndTranscribe();
-      return;
-    }
-
-    // First tap: Start recording
-    try {
-      await _voiceRecorderService.startRecording();
-      debugPrint('VOICE: recording started');
-    } catch (e) {
-      debugPrint('Failed to start voice recording: $e');
-    }
-  }
-
-  Future<void> stopRecordingAndTranscribe() async {
-    // Stop recording
-    final audioPath = await _voiceRecorderService.stopRecording();
-
-    // Verification log: File path
-    debugPrint('VOICE FILE PATH: $audioPath');
-
-    // ONLY if path != null → send HTTP request
-    if (audioPath != null) {
-      await sendTranscriptionRequest(audioPath);
-    } else {
-      debugPrint(
-        'ERROR: Execution stopped - audioPath is null after stopRecording()',
-      );
-    }
-  }
-
-  Future<void> sendTranscriptionRequest(String audioPath) async {
-    final text = await _transcriptionService.transcribeAudio(audioPath);
-    if (text != null && text.isNotEmpty) {
-      controller.messageController.text = text;
-      controller.complaintController.text = text;
-    }
-  }
-
-  bool get isListening => _voiceRecorderService.isRecording;
 
   void onComplaintChanged(String text) {
     // Text is automatically updated via controller
@@ -170,7 +122,6 @@ class DiagnoseHandlers {
   }
 
   void dispose() {
-    // VoiceRecorderService is disposed by lifecycle owner (DiagnosePage)
     // Handlers only coordinate, don't own resources
   }
 }

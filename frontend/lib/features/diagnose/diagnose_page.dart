@@ -7,7 +7,6 @@ import 'widgets/diagnose_background.dart';
 import 'widgets/diagnose_fixed_content.dart';
 import 'widgets/diagnose_card_overlay.dart';
 import '../../state/app_state.dart';
-import '../../services/voice_recorder_service.dart';
 
 class DiagnosePage extends StatefulWidget {
   final AppState appState;
@@ -21,29 +20,21 @@ class DiagnosePage extends StatefulWidget {
 class _DiagnosePageState extends State<DiagnosePage> {
   late final DiagnoseController _controller;
   late final DiagnoseHandlers _handlers;
-  // Lifecycle-managed: Create once in initState, dispose in dispose()
-  late final VoiceRecorderService _voiceRecorderService;
 
   @override
   void initState() {
     super.initState();
     _controller = DiagnoseController();
-    // Create VoiceRecorderService once at lifecycle start
-    _voiceRecorderService = VoiceRecorderService();
-    // Pass services to handlers (dependency injection)
     _handlers = DiagnoseHandlers(
       _controller,
       widget.appState,
-      _voiceRecorderService,
     );
     _controller.initializeComplaintSelection();
-    _handlers.initializeVoiceRecorder();
   }
 
   @override
   void dispose() {
     _handlers.dispose();
-    _voiceRecorderService.dispose();
     _controller.dispose();
     super.dispose();
   }

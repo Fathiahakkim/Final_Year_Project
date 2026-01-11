@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../handlers/diagnose_handlers.dart';
 import 'unified_card.dart';
@@ -55,7 +56,9 @@ class DiagnoseCardOverlay extends StatelessWidget {
               messageController: controller.messageController,
               onComplaintChanged: handlers.onComplaintChanged,
               onSend: handlers.onSend,
-              onVoiceTap: handlers.onVoiceTap,
+              onVoiceTap: () {
+                debugPrint('VOICE UI: mic tapped (no logic attached)');
+              },
             ),
           ),
         );
