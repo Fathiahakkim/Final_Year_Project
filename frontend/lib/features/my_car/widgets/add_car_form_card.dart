@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/my_car_theme.dart';
 
 class AddCarFormCard extends StatefulWidget {
-  final VoidCallback? onSave;
+  final Function(String, String, int, String)? onSave;
   final VoidCallback? onCancel;
 
   const AddCarFormCard({super.key, this.onSave, this.onCancel});
@@ -141,18 +141,34 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
 
   String? _selectedMake = 'Toyota';
   String? _selectedModel = 'Corolla';
-  final TextEditingController _yearController = TextEditingController(
-    text: '2020',
-  );
-  final TextEditingController _licensePlateController = TextEditingController(
-    text: 'ABC1234',
-  );
+  String? _selectedYear = '2020';
+  final TextEditingController _licensePlateController = TextEditingController();
 
   @override
   void dispose() {
-    _yearController.dispose();
     _licensePlateController.dispose();
     super.dispose();
+  }
+
+  void _handleSave() {
+    if (_selectedMake == null || 
+        _selectedModel == null || 
+        _selectedYear == null || 
+        _licensePlateController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+    
+    if (widget.onSave != null) {
+      widget.onSave!(
+        _selectedMake!,
+        _selectedModel!,
+        int.parse(_selectedYear!),
+        _licensePlateController.text.trim(),
+      );
+    }
   }
 
   @override
@@ -178,7 +194,7 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
           SizedBox(
             height: MyCarTheme.buttonHeight,
             child: ElevatedButton(
-              onPressed: widget.onSave ?? () {},
+              onPressed: _handleSave,
               style: ElevatedButton.styleFrom(
                 backgroundColor: MyCarTheme.accentBlue,
                 foregroundColor: Colors.white,
@@ -372,7 +388,7 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<String>(
-            value: '2020',
+            value: _selectedYear,
             decoration: InputDecoration(
               filled: true,
               fillColor: const Color(0xFFF5F6FA),
@@ -397,7 +413,7 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
             onChanged: (value) {
               if (value != null) {
                 setState(() {
-                  _yearController.text = value;
+                  _selectedYear = value;
                 });
               }
             },

@@ -16,17 +16,20 @@ class DiagnosisResultWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final issues = diagnosisResult.issues;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 16),
-        ...diagnosisResult.issues.asMap().entries.map((entry) {
+        const SizedBox(height: 8),
+        ...issues.asMap().entries.map((entry) {
           final index = entry.key;
           final issue = entry.value;
+          final isLastItem = index == issues.length - 1;
           return _IssueItem(
             issue: issue,
             index: index,
+            isLastItem: isLastItem,
           );
         }),
       ],
@@ -37,10 +40,12 @@ class DiagnosisResultWidget extends StatelessWidget {
 class _IssueItem extends StatelessWidget {
   final DiagnosedIssue issue;
   final int index;
+  final bool isLastItem;
 
   const _IssueItem({
     required this.issue,
     required this.index,
+    required this.isLastItem,
   });
 
   // Get icon based on issue name or index
@@ -69,7 +74,7 @@ class _IssueItem extends StatelessWidget {
     final iconColor = _getIconColor();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: isLastItem ? 4 : 12),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       decoration: BoxDecoration(
         color: Colors.white,

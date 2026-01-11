@@ -6,9 +6,13 @@ import 'widgets/my_car_header.dart';
 import 'widgets/add_car_button.dart';
 import 'widgets/my_car_white_card.dart';
 import '../diagnose/utils/diagnose_spacing.dart';
+import '../../state/app_state.dart';
+import '../../models/car_model.dart';
 
 class MyCarPage extends StatefulWidget {
-  const MyCarPage({super.key});
+  final AppState appState;
+
+  const MyCarPage({super.key, required this.appState});
 
   @override
   State<MyCarPage> createState() => _MyCarPageState();
@@ -23,8 +27,20 @@ class _MyCarPageState extends State<MyCarPage> {
     });
   }
 
-  void _handleSaveCar() {
-    // TODO: Save car data
+  void _handleSaveCar(String make, String model, int year, String licensePlate) {
+    // Save car data to app state
+    final newCar = CarModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      make: make,
+      model: model,
+      year: year,
+      licensePlate: licensePlate,
+      imageUrl: '',
+      healthStatus: 'HEALTHY',
+    );
+    
+    widget.appState.addCar(newCar);
+    
     setState(() {
       _isCardExpanded = false;
     });
@@ -130,6 +146,7 @@ class _MyCarPageState extends State<MyCarPage> {
               cardHeight: cardHeight,
               keyboardHeight: keyboardHeight,
               isExpanded: _isCardExpanded,
+              appState: widget.appState,
               onSave: _handleSaveCar,
               onCancel: _handleCancelAddCar,
             ),

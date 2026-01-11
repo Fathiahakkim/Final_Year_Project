@@ -76,48 +76,12 @@ class DiagnoseHandlers {
         );
       }
     } catch (e) {
-      // For testing: Show dummy data if backend fails
-      // TODO: Remove this dummy data when backend is connected
-      await Future.delayed(const Duration(seconds: 2)); // Simulate delay
-
-      final dummyResult = DiagnosisResult(
-        issues: [
-          DiagnosedIssue(
-            name: 'Engine Misfire',
-            confidence: 0.97,
-            severity: IssueSeverity.critical,
-          ),
-          DiagnosedIssue(
-            name: 'Faulty Spark Plug',
-            confidence: 0.72,
-            severity: IssueSeverity.warning,
-          ),
-          DiagnosedIssue(
-            name: 'Fuel Injector Issue',
-            confidence: 0.65,
-            severity: IssueSeverity.warning,
-          ),
-        ],
-        timestamp: DateTime.now(),
+      // Stop loading state and set error message
+      controller.setLoading(false);
+      controller.setError(
+        'Backend not connected. Please try again later.',
       );
-
-      controller.setDiagnosisResult(dummyResult);
-
-      // Append to diagnosis history
-      if (dummyResult.issues.isNotEmpty) {
-        appState.addDiagnosisHistoryEntry(
-          DiagnosisHistoryEntry(
-            complaintText: message,
-            primaryFaultName: dummyResult.issues.first.name,
-            confidence: dummyResult.issues.first.confidence,
-            timestamp: dummyResult.timestamp,
-          ),
-        );
-      }
-
-      // Uncomment below when backend is ready:
-      // controller.setError(e.toString());
-      // print('Diagnosis error: $e');
+      print('Diagnosis error: $e');
     }
   }
 

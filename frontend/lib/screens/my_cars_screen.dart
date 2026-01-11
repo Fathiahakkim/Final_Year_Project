@@ -9,6 +9,6 @@ class MyCarsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MyCarPage();
+    return MyCarPage(appState: appState);
   }
 }

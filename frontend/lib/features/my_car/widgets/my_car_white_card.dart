@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import '../theme/my_car_theme.dart';
 import 'empty_car_card.dart';
 import 'add_car_form_card.dart';
+import '../../../state/app_state.dart';
 
 class MyCarWhiteCard extends StatelessWidget {
   final double cardHeight;
   final double keyboardHeight;
   final bool isExpanded;
-  final VoidCallback? onSave;
+  final AppState appState;
+  final Function(String, String, int, String)? onSave;
   final VoidCallback? onCancel;
 
   const MyCarWhiteCard({
@@ -15,6 +17,7 @@ class MyCarWhiteCard extends StatelessWidget {
     required this.cardHeight,
     required this.keyboardHeight,
     this.isExpanded = false,
+    required this.appState,
     this.onSave,
     this.onCancel,
   });
@@ -121,7 +124,7 @@ class MyCarWhiteCard extends StatelessWidget {
               topLeft: Radius.circular(24),
               topRight: Radius.circular(24),
             ),
-            child: const EmptyCarCard(),
+            child: EmptyCarCard(appState: appState),
           ),
         ),
       ),

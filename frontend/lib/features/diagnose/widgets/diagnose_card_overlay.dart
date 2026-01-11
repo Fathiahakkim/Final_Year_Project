@@ -36,9 +36,10 @@ class DiagnoseCardOverlay extends StatelessWidget {
 
         double dynamicHeight;
         if (messageSent || hasResults || isLoading) {
-          // Expand to cover mic - use larger portion of screen
-          // Card stays expanded once message is sent
-          dynamicHeight = screenHeight * 0.65;
+          // Expand to show results - but leave space for car above
+          // Card stays expanded once message is sent, but doesn't need to be so tall
+          // Reduced from 0.65 to 0.55 to leave more space between car and card
+          dynamicHeight = screenHeight * 0.55;
         } else {
           // Normal height when no message sent yet
           dynamicHeight = cardHeight;

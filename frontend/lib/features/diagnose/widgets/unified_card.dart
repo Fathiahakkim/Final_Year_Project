@@ -111,13 +111,23 @@ class UnifiedCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Show diagnosis results if available
-                      if (controller.diagnosisResult != null)
-                        DiagnosisResultWidget(
-                          diagnosisResult: controller.diagnosisResult!,
+                      // 1. If error exists → show error message
+                      if (controller.errorMessage != null)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              controller.errorMessage!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: DiagnoseTheme.textSecondary,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         )
-                      else if (controller.isLoading || controller.messageSent)
-                        // Show processing state when loading or when message sent but no results yet
+                      // 2. Else if loading → show Processing
+                      else if (controller.isLoading)
                         Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -148,34 +158,13 @@ class UnifiedCard extends StatelessWidget {
                             ],
                           ),
                         )
-                      else if (controller.errorMessage != null)
-                        Container(
-                          margin: const EdgeInsets.only(top: 16),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.error_outline,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Error: ${controller.errorMessage}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      // 3. Else if diagnosisResult exists and has issues → show diagnosis results
+                      else if (controller.diagnosisResult != null &&
+                          controller.diagnosisResult!.issues.isNotEmpty)
+                        DiagnosisResultWidget(
+                          diagnosisResult: controller.diagnosisResult!,
                         ),
+                      // 4. Else → show empty / placeholder state
                     ],
                   ),
                 ),

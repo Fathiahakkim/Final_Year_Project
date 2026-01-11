@@ -13,8 +13,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryCar = appState.primaryCar;
-    
     return Scaffold(
       backgroundColor: const Color(0xFF0A0E27), // Dark blue/black background
       body: SafeArea(
@@ -92,33 +90,53 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              // Car card
-              if (primaryCar != null)
-                _CarCard(
-                  car: primaryCar,
-                  onTap: () {
-                    // Navigate to My Cars screen (index 1)
-                    onNavigate(1);
-                  },
-                ),
-              
-              if (primaryCar == null)
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1F3A),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'No cars registered yet',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
+              // Cars carousel
+              ListenableBuilder(
+                listenable: appState,
+                builder: (context, child) {
+                  if (appState.cars.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1F3A),
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      child: const Center(
+                        child: Text(
+                          'No cars registered yet',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  return SizedBox(
+                    height: 280,
+                    child: PageView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: appState.cars.length,
+                      itemBuilder: (context, index) {
+                        final car = appState.cars[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: index < appState.cars.length - 1 ? 16 : 0,
+                          ),
+                          child: _CarCard(
+                            car: car,
+                            onTap: () {
+                              // Navigate to My Cars screen (index 1)
+                              onNavigate(1);
+                            },
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -318,19 +336,6 @@ class _CarCard extends StatelessWidget {
     required this.onTap,
   });
 
-  Color _getHealthColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'HEALTHY':
-        return const Color(0xFF2D5016); // Dark green
-      case 'WARNING':
-        return const Color(0xFF8B6914); // Orange/yellow
-      case 'CRITICAL':
-        return const Color(0xFF8B1A1A); // Red
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -357,33 +362,10 @@ class _CarCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getHealthColor(car.healthStatus),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            car.healthStatus,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ],
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                      size: 18,
                     ),
                   ],
                 ),
