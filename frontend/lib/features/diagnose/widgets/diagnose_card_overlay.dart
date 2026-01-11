@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../handlers/diagnose_handlers.dart';
 import 'unified_card.dart';
+import '../../voice/voice_controller.dart';
 
 class DiagnoseCardOverlay extends StatelessWidget {
   final DiagnoseController controller;
@@ -22,6 +22,8 @@ class DiagnoseCardOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final screenHeight = mediaQuery.size.height;
+
+    final voiceController = VoiceController();
 
     return ListenableBuilder(
       listenable: controller,
@@ -56,8 +58,17 @@ class DiagnoseCardOverlay extends StatelessWidget {
               messageController: controller.messageController,
               onComplaintChanged: handlers.onComplaintChanged,
               onSend: handlers.onSend,
-              onVoiceTap: () {
-                debugPrint('VOICE UI: mic tapped (no logic attached)');
+              onVoiceTap: () async {
+                await voiceController.start(
+                  onText: (text) {
+                    controller.messageController.text = text;
+                    controller
+                        .messageController
+                        .selection = TextSelection.fromPosition(
+                      TextPosition(offset: text.length),
+                    );
+                  },
+                );
               },
             ),
           ),

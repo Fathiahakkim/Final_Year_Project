@@ -18,11 +18,7 @@ class VoiceButton extends StatelessWidget {
           color: const Color(0xFF5BA3F5), // Lighter shade of blue
           boxShadow: DiagnoseTheme.voiceButtonShadow,
         ),
-        child: const Icon(
-          Icons.mic,
-          color: Colors.white,
-          size: 56.0,
-        ),
+        child: const Icon(Icons.mic, color: Colors.white, size: 56.0),
       ),
     );
   }

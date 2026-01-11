@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../utils/diagnose_spacing.dart';
 import 'car_visual.dart';
 import 'voice_button.dart';
 import '../handlers/diagnose_handlers.dart';
+import '../../voice/voice_controller.dart';
 
 class DiagnoseFixedContent extends StatelessWidget {
   final DiagnoseController controller;
@@ -26,6 +26,8 @@ class DiagnoseFixedContent extends StatelessWidget {
     final screenHeight = mediaQuery.size.height;
     final safeAreaTop = mediaQuery.padding.top;
     final safeAreaBottom = mediaQuery.padding.bottom;
+
+    final voiceController = VoiceController();
 
     // Calculate card top position - card moves up when keyboard opens
     final cardBottom = keyboardHeight + safeAreaBottom;
@@ -112,8 +114,15 @@ class DiagnoseFixedContent extends StatelessWidget {
             child: Center(
               child: VoiceButton(
                 key: controller.micKey,
-                onTap: () {
-                  debugPrint('VOICE UI: mic tapped (no logic attached)');
+                onTap: () async {
+                  await voiceController.start(
+                    onText: (text) {
+                      controller.messageController.text = text;
+                      controller.messageController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: text.length),
+                      );
+                    },
+                  );
                 },
               ),
             ),
