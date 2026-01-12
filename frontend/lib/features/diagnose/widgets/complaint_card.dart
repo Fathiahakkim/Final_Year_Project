@@ -44,10 +44,16 @@ class ComplaintCard extends StatelessWidget {
               color: DiagnoseTheme.textPrimary,
               height: 1.4,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
+              hintText: 'Engine is shaking when idling.',
+              hintStyle: TextStyle(
+                fontSize: 16,
+                color: DiagnoseTheme.textSecondary,
+                height: 1.4,
+              ),
             ),
             cursorColor: DiagnoseTheme.accentBlue,
           ),

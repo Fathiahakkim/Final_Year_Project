@@ -3,9 +3,7 @@ import '../../../models/diagnosis_result_model.dart';
 
 class DiagnoseController extends ChangeNotifier {
   final TextEditingController messageController = TextEditingController();
-  final TextEditingController complaintController = TextEditingController(
-    text: 'Engine is shaking when idling.',
-  );
+  final TextEditingController complaintController = TextEditingController();
   final GlobalKey carKey = GlobalKey();
   final GlobalKey micKey = GlobalKey();
 
