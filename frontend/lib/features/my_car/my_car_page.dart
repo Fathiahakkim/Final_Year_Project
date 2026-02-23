@@ -8,6 +8,7 @@ import 'widgets/my_car_white_card.dart';
 import '../diagnose/utils/diagnose_spacing.dart';
 import '../../state/app_state.dart';
 import '../../models/car_model.dart';
+import '../../utils/car_image_map.dart';
 
 class MyCarPage extends StatefulWidget {
   final AppState appState;
@@ -28,6 +29,14 @@ class _MyCarPageState extends State<MyCarPage> {
   }
 
   void _handleSaveCar(String make, String model, int year, String licensePlate) {
+    // Generate lookup key for car image
+    final String imageKey = '${make}_$model';
+    final String resolvedImageUrl = carImageMap[imageKey] ?? defaultCarImage;
+
+    // Temporary debug logs
+    print('🔑 Car image key: $imageKey');
+    print('🖼️ Resolved image path: $resolvedImageUrl');
+
     // Save car data to app state
     final newCar = CarModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -35,7 +44,7 @@ class _MyCarPageState extends State<MyCarPage> {
       model: model,
       year: year,
       licensePlate: licensePlate,
-      imageUrl: '',
+      imageUrl: resolvedImageUrl,
       healthStatus: 'HEALTHY',
     );
     
@@ -96,7 +105,7 @@ class _MyCarPageState extends State<MyCarPage> {
                   child: Column(
                     children: [
                       // Header section with car icon and description
-                      const MyCarHeader(),
+                      MyCarHeader(appState: widget.appState),
                       SizedBox(height: sectionSpacing),
                       // ADD CAR button
                       AddCarButton(onPressed: _handleAddCar),
@@ -110,7 +119,7 @@ class _MyCarPageState extends State<MyCarPage> {
                 child: Column(
                   children: [
                     SizedBox(height: topPadding),
-                    // Car icon - circular white outline
+                    // Car image or fallback icon - circular white outline
                     Container(
                       width: MyCarTheme.carIconSize,
                       height: MyCarTheme.carIconSize,
@@ -121,10 +130,34 @@ class _MyCarPageState extends State<MyCarPage> {
                           width: 2.5,
                         ),
                       ),
-                      child: Icon(
-                        Icons.directions_car_outlined,
-                        size: MyCarTheme.carIconSize * 0.55,
-                        color: Colors.white.withOpacity(0.7),
+                      child: ClipOval(
+                        child: Builder(
+                          builder: (context) {
+                            final selectedCar = widget.appState.primaryCar;
+                            if (selectedCar != null) {
+                              return Image.asset(
+                                selectedCar.imageUrl.isNotEmpty
+                                    ? selectedCar.imageUrl
+                                    : 'assets/cars/default_car.jpg',
+                                height: MyCarTheme.carIconSize,
+                                width: MyCarTheme.carIconSize,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.directions_car_outlined,
+                                    size: MyCarTheme.carIconSize * 0.55,
+                                    color: Colors.white.withOpacity(0.7),
+                                  );
+                                },
+                              );
+                            }
+                            return Icon(
+                              Icons.directions_car_outlined,
+                              size: MyCarTheme.carIconSize * 0.55,
+                              color: Colors.white.withOpacity(0.7),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

@@ -402,11 +402,20 @@ class _CarCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Car icon placeholder
-                      const Icon(
-                        Icons.directions_car,
-                        size: 120,
-                        color: Color(0xFF2C3E50),
+                      // Car image from asset
+                      Image.asset(
+                        car.imageUrl.isNotEmpty
+                            ? car.imageUrl
+                            : 'assets/cars/default_car.jpg',
+                        height: 120,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.directions_car,
+                            size: 120,
+                            color: Color(0xFF2C3E50),
+                          );
+                        },
                       ),
                     ],
                   ),

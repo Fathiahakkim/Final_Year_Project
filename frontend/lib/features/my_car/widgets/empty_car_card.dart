@@ -87,10 +87,23 @@ class EmptyCarCard extends StatelessWidget {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(
-                              Icons.directions_car,
-                              color: Colors.grey[600],
-                              size: 28,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                car.imageUrl.isNotEmpty
+                                    ? car.imageUrl
+                                    : 'assets/cars/default_car.jpg',
+                                height: 48,
+                                width: 48,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.directions_car,
+                                    color: Colors.grey[600],
+                                    size: 28,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
