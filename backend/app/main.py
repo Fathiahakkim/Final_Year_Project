@@ -4,7 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.routes import diagnose
+from app.api.routes import obd_routes
 from app.models.predictor import Predictor, ModelLoadError
+from app.services.obd_service import OBDService, OBDModelLoadError
 
 import logging
 
@@ -37,7 +39,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Unexpected error loading models: {e}")
         app.state.predictor = None
-    
+
+    # Startup: Load OBD service
+    logger.info("Loading OBD model...")
+    try:
+        obd_service = OBDService()
+        app.state.obd_service = obd_service
+        logger.info("OBD model loaded successfully.")
+    except OBDModelLoadError as e:
+        logger.error(f"Failed to load OBD model: {e}")
+        logger.error("API will start but /api/v1/obd/predict will not work until OBD models are available.")
+        app.state.obd_service = None
+    except Exception as e:
+        logger.error(f"Unexpected error loading OBD model: {e}")
+        app.state.obd_service = None
+
     yield
     
     # Shutdown: Cleanup (if needed)
@@ -63,6 +79,7 @@ app.add_middleware(
 
 # Register API routes
 app.include_router(diagnose.router)
+app.include_router(obd_routes.router)
 
 
 @app.get("/")

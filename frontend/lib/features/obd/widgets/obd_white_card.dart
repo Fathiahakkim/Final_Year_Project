@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import '../theme/obd_theme.dart';
 import '../controllers/obd_controller.dart';
+import '../models/obd_prediction_model.dart';
 
 class OBDWhiteCard extends StatelessWidget {
   final double cardHeight;
@@ -69,24 +69,9 @@ class _OBDCardContent extends StatelessWidget {
 
   const _OBDCardContent({required this.controller});
 
-  Future<void> _handleUpload() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['log', 'txt', 'csv'],
-      );
-
-      if (result != null) {
-        controller.uploadOBDData(result.files.single.path ?? '');
-      }
-    } catch (e) {
-      // Handle error
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +87,7 @@ class _OBDCardContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Manually upload an OBD data log file for review.',
+            'Upload a CSV file to diagnose faults from OBD sensor data.',
             style: TextStyle(
               fontSize: 14,
               color: OBDTheme.textSecondary,
@@ -110,28 +95,151 @@ class _OBDCardContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _handleUpload,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: OBDTheme.accentBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25.0),
+
+          // Upload button — delegates to controller
+          ValueListenableBuilder<bool>(
+            valueListenable: controller.isUploading,
+            builder: (context, isUploading, _) {
+              return SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: isUploading ? null : () => controller.pickAndUploadCSV(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: OBDTheme.accentBlue,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: OBDTheme.accentBlue.withOpacity(0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25.0),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: isUploading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'UPLOAD FILE',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
                 ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'UPLOAD FILE',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
+              );
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // Error message
+          ValueListenableBuilder<String?>(
+            valueListenable: controller.uploadError,
+            builder: (context, error, _) {
+              if (error == null) return const SizedBox.shrink();
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        error,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.red.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Prediction results
+          ValueListenableBuilder<OBDPredictionResult?>(
+            valueListenable: controller.predictionResult,
+            builder: (context, result, _) {
+              if (result == null) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    'Detected Faults',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: OBDTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...result.topFaults.map(
+                    (fault) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: OBDTheme.accentBlue.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: OBDTheme.accentBlue.withOpacity(0.15),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                fault.fault.replaceAll('_', ' '),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: OBDTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: OBDTheme.accentBlue.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${(fault.confidence * 100).toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: OBDTheme.accentBlue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
