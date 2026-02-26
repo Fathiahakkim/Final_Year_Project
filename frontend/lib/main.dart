@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/car.dart';
 import 'widgets/navigation_scaffold.dart';
 import 'state/app_state.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive for Flutter (sets default storage path)
+  await Hive.initFlutter();
+
+  // Register Hive adapters
+  Hive.registerAdapter(CarAdapter());
+
+  // Open typed box for storing car data
+  await Hive.openBox<Car>('carsBox');
+
   final appState = AppState();
+  appState.loadFromHive();
+
   runApp(MyApp(appState: appState));
 }
 

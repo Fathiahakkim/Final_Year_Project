@@ -51,7 +51,10 @@ class _NavigationScaffoldState extends State<NavigationScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,

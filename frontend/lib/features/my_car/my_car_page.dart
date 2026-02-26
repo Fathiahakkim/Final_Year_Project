@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'theme/my_car_theme.dart';
 import 'widgets/my_car_app_bar.dart';
 import 'widgets/my_car_background.dart';
@@ -8,6 +9,7 @@ import 'widgets/my_car_white_card.dart';
 import '../diagnose/utils/diagnose_spacing.dart';
 import '../../state/app_state.dart';
 import '../../models/car_model.dart';
+import '../../models/car.dart';
 import '../../utils/car_image_map.dart';
 
 class MyCarPage extends StatefulWidget {
@@ -28,7 +30,10 @@ class _MyCarPageState extends State<MyCarPage> {
     });
   }
 
-  void _handleSaveCar(String make, String model, int year, String licensePlate) {
+  void _handleSaveCar(String make, String model, int year, String licensePlate) async {
+    // Generate unique ID
+    final String carId = DateTime.now().millisecondsSinceEpoch.toString();
+
     // Generate lookup key for car image
     final String imageKey = '${make}_$model';
     final String resolvedImageUrl = carImageMap[imageKey] ?? defaultCarImage;
@@ -37,9 +42,25 @@ class _MyCarPageState extends State<MyCarPage> {
     print('🔑 Car image key: $imageKey');
     print('🖼️ Resolved image path: $resolvedImageUrl');
 
-    // Save car data to app state
+    // --- Persist to Hive ---
+    final box = Hive.box<Car>('carsBox');
+    final isFirstCar = box.isEmpty;
+
+    final hiveCar = Car(
+      id: carId,
+      make: make,
+      model: model,
+      year: year.toString(),
+      licensePlate: licensePlate,
+      imagePath: resolvedImageUrl,
+      isSelected: isFirstCar,
+    );
+
+    await box.put(hiveCar.id, hiveCar);
+
+    // --- Save to in-memory app state (keeps UI working) ---
     final newCar = CarModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: carId,
       make: make,
       model: model,
       year: year,
@@ -47,9 +68,9 @@ class _MyCarPageState extends State<MyCarPage> {
       imageUrl: resolvedImageUrl,
       healthStatus: 'HEALTHY',
     );
-    
+
     widget.appState.addCar(newCar);
-    
+
     setState(() {
       _isCardExpanded = false;
     });
@@ -62,6 +83,10 @@ class _MyCarPageState extends State<MyCarPage> {
     setState(() {
       _isCardExpanded = false;
     });
+  }
+
+  void _handleSelectCar(String carId) {
+    widget.appState.selectCar(carId);
   }
 
   @override
@@ -182,6 +207,7 @@ class _MyCarPageState extends State<MyCarPage> {
               appState: widget.appState,
               onSave: _handleSaveCar,
               onCancel: _handleCancelAddCar,
+              onSelectCar: _handleSelectCar,
             ),
           ],
         ),

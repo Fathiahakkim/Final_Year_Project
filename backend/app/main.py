@@ -24,13 +24,9 @@ async def lifespan(app: FastAPI):
     # Startup: Load predictor
     logger.info("Loading ML models...")
     try:
-        predictor = Predictor(
-            model_path=settings.model_path,
-            vectorizer_path=settings.vectorizer_path
-        )
+        predictor = Predictor()
         app.state.predictor = predictor
-        logger.info(f"Successfully loaded model from {settings.model_path}")
-        logger.info(f"Successfully loaded vectorizer from {settings.vectorizer_path}")
+        logger.info(f"Successfully loaded DistilBERT model from HuggingFace")
         logger.info(f"Model supports {len(predictor.classes_)} classes: {list(predictor.classes_)}")
     except ModelLoadError as e:
         logger.error(f"Failed to load models: {e}")

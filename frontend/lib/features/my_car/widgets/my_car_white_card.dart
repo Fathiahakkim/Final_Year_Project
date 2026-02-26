@@ -11,6 +11,7 @@ class MyCarWhiteCard extends StatelessWidget {
   final AppState appState;
   final Function(String, String, int, String)? onSave;
   final VoidCallback? onCancel;
+  final Function(String carId)? onSelectCar;
 
   const MyCarWhiteCard({
     super.key,
@@ -20,6 +21,7 @@ class MyCarWhiteCard extends StatelessWidget {
     required this.appState,
     this.onSave,
     this.onCancel,
+    this.onSelectCar,
   });
 
   @override
@@ -124,7 +126,7 @@ class MyCarWhiteCard extends StatelessWidget {
               topLeft: Radius.circular(24),
               topRight: Radius.circular(24),
             ),
-            child: EmptyCarCard(appState: appState),
+            child: EmptyCarCard(appState: appState, onSelectCar: onSelectCar),
           ),
         ),
       ),

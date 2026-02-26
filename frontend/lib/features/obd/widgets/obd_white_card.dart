@@ -7,12 +7,14 @@ class OBDWhiteCard extends StatelessWidget {
   final double cardHeight;
   final double keyboardHeight;
   final OBDController controller;
+  final bool hasResults;
 
   const OBDWhiteCard({
     super.key,
     required this.cardHeight,
     required this.keyboardHeight,
     required this.controller,
+    this.hasResults = false,
   });
 
   @override
@@ -76,6 +78,16 @@ class _OBDCardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Prediction results (above upload button) ──────────────
+          ValueListenableBuilder<OBDPredictionResult?>(
+            valueListenable: controller.predictionResult,
+            builder: (context, result, _) {
+              if (result == null) return const SizedBox.shrink();
+              return _OBDResultsSection(result: result);
+            },
+          ),
+
+          // ── Title & description ──────────────────────────────────
           Text(
             'Add OBD Data',
             style: TextStyle(
@@ -96,7 +108,7 @@ class _OBDCardContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Upload button — delegates to controller
+          // ── Upload button ────────────────────────────────────────
           ValueListenableBuilder<bool>(
             valueListenable: controller.isUploading,
             builder: (context, isUploading, _) {
@@ -104,11 +116,14 @@ class _OBDCardContent extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: isUploading ? null : () => controller.pickAndUploadCSV(),
+                  onPressed: isUploading
+                      ? null
+                      : () => controller.pickAndUploadCSV(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: OBDTheme.accentBlue,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: OBDTheme.accentBlue.withOpacity(0.5),
+                    disabledBackgroundColor:
+                        OBDTheme.accentBlue.withOpacity(0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25.0),
                     ),
@@ -138,7 +153,7 @@ class _OBDCardContent extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Error message
+          // ── Error message ────────────────────────────────────────
           ValueListenableBuilder<String?>(
             valueListenable: controller.uploadError,
             builder: (context, error, _) {
@@ -151,7 +166,8 @@ class _OBDCardContent extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                    Icon(Icons.error_outline,
+                        color: Colors.red.shade700, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -167,79 +183,129 @@ class _OBDCardContent extends StatelessWidget {
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+}
 
-          // Prediction results
-          ValueListenableBuilder<OBDPredictionResult?>(
-            valueListenable: controller.predictionResult,
-            builder: (context, result, _) {
-              if (result == null) return const SizedBox.shrink();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  Text(
-                    'Detected Faults',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: OBDTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...result.topFaults.map(
-                    (fault) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: OBDTheme.accentBlue.withOpacity(0.06),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: OBDTheme.accentBlue.withOpacity(0.15),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                fault.fault.replaceAll('_', ' '),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: OBDTheme.textPrimary,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: OBDTheme.accentBlue.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${(fault.confidence * 100).toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: OBDTheme.accentBlue,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+/// Displays OBD prediction results in the same style as the Diagnose screen:
+/// wrench icon, fault name, severity label, confidence %, and progress bar.
+class _OBDResultsSection extends StatelessWidget {
+  final OBDPredictionResult result;
+
+  const _OBDResultsSection({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Text(
+          'Detected Faults',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: OBDTheme.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Each fault as a card with icon + progress bar
+        ...result.topFaults.asMap().entries.map((entry) {
+          final index = entry.key;
+          final fault = entry.value;
+          final isLast = index == result.topFaults.length - 1;
+          return _OBDFaultItem(fault: fault, isLast: isLast);
+        }),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+}
+
+/// A single fault item styled like the Diagnose screen's _IssueItem:
+/// wrench icon | fault name + "warning" | percentage | progress bar
+class _OBDFaultItem extends StatelessWidget {
+  final OBDFaultPrediction fault;
+  final bool isLast;
+
+  const _OBDFaultItem({required this.fault, required this.isLast});
+
+  String _getSeverityLabel(double confidence) {
+    if (confidence >= 0.7) return 'critical';
+    if (confidence >= 0.4) return 'warning';
+    return 'info';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final confidencePercent = (fault.confidence * 100).round();
+    final severity = _getSeverityLabel(fault.confidence);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 4 : 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row: icon | name + severity | percentage
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.build,
+                color: OBDTheme.accentBlue,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fault.fault.replaceAll('_', ' '),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: OBDTheme.textPrimary,
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                    Text(
+                      severity,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: OBDTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$confidencePercent%',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: OBDTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: fault.confidence,
+              backgroundColor: const Color(0xFFE5E5E5),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(OBDTheme.accentBlue),
+              minHeight: 6,
+            ),
           ),
         ],
       ),

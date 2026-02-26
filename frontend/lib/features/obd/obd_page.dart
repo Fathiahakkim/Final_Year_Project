@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'controllers/obd_controller.dart';
+import 'models/obd_prediction_model.dart';
 import 'widgets/obd_app_bar.dart';
 import 'widgets/obd_background.dart';
 import 'widgets/obd_adapter_graphic.dart';
@@ -47,32 +48,50 @@ class _OBDPageState extends State<OBDPage> {
       body: OBDBackground(
         child: SafeArea(
           bottom: false,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Adapter graphic
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                top: minTop - safeAreaTop,
-                left: 0,
-                right: 0,
-                child: const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: OBDTheme.horizontalPadding,
+          child: ValueListenableBuilder<OBDPredictionResult?>(
+            valueListenable: _controller.predictionResult,
+            builder: (context, result, _) {
+              final hasResults = result != null;
+
+              // Compute dynamic card height: expand when results are present
+              final dynamicCardHeight = hasResults
+                  ? screenHeight * 0.55
+                  : cardHeight;
+
+              // Push the adapter graphic higher when card expands
+              final adapterTop = hasResults
+                  ? (minTop - safeAreaTop) * 0.3
+                  : minTop - safeAreaTop;
+
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Adapter graphic — animates upward when results arrive
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOutCubic,
+                    top: adapterTop,
+                    left: 0,
+                    right: 0,
+                    child: const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: OBDTheme.horizontalPadding,
+                        ),
+                        child: OBDAdapterGraphic(),
+                      ),
                     ),
-                    child: OBDAdapterGraphic(),
                   ),
-                ),
-              ),
-              // White card overlay at bottom
-              OBDWhiteCard(
-                cardHeight: cardHeight,
-                keyboardHeight: keyboardHeight,
-                controller: _controller,
-              ),
-            ],
+                  // White card overlay at bottom — expands on results
+                  OBDWhiteCard(
+                    cardHeight: dynamicCardHeight,
+                    keyboardHeight: keyboardHeight,
+                    controller: _controller,
+                    hasResults: hasResults,
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
