@@ -177,14 +177,14 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<String>(
             value: _selectedMake,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF5F6FA),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -237,14 +237,14 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<String>(
             value: _selectedModel,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF5F6FA),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -296,7 +296,7 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
           style: const TextStyle(fontSize: 16, color: Color(0xFF212121)),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFFF5F6FA),
+            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -327,14 +327,14 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<String>(
             value: _selectedYear,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF5F6FA),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,

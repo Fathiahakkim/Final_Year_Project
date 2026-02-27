@@ -77,7 +77,7 @@ class UnifiedCard extends StatelessWidget {
                         maxHeight: 120,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F6FA),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       padding: const EdgeInsets.all(14),
@@ -181,7 +181,7 @@ class UnifiedCard extends StatelessWidget {
                       right: 16,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F6FA),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),

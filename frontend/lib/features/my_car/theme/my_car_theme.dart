@@ -5,7 +5,7 @@ class MyCarTheme {
   static const Color primaryDark = Color(0xFF1A1A2E);
   static const Color secondaryDark = Color(0xFF16213E);
   static const Color accentBlue = Color(0xFF4A90E2);
-  static const Color cardWhite = Color(0xFFFFFFFF);
+  static const Color cardWhite = Color(0xFFEFEEF6);
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFFB0B0B0);
   static const Color iconBackground = Color(0xFFFFFFFF);
@@ -15,7 +15,7 @@ class MyCarTheme {
   static const LinearGradient backgroundGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)],
+    colors: [Color(0xFF251B7C), Color(0xFF251B7C), Color(0xFF251B7C)],
   );
 
   // Border Radius

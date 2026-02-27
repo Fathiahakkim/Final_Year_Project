@@ -28,7 +28,7 @@ class EmptyCarCard extends StatelessWidget {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F6FA),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -111,7 +111,7 @@ class EmptyCarCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFFE3F2FD)
-                            : const Color(0xFFF5F6FA),
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: isSelected
                             ? Border.all(

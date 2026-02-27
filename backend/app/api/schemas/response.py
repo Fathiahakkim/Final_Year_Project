@@ -73,6 +73,16 @@ class DiagnosisResponse(BaseModel):
             "other_suppressed": True
         }
     )
+    low_confidence: bool = Field(
+        ...,
+        description="Indicates if the highest confidence prediction is below 0.40",
+        example=False
+    )
+    message: str | None = Field(
+        default=None,
+        description="Optional message providing context, such as asking for more details when confidence is low",
+        example="The prediction confidence is low. Please provide more details about the issue."
+    )
 
 
 class TranscriptionResponse(BaseModel):

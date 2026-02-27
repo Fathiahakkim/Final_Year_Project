@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27), // Dark blue/black background
+      backgroundColor: const Color(0xFF251B7C), // Dark blue/black background
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
@@ -98,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A1F3A),
+                        color: const Color(0xFF3F3CBF),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Center(
@@ -165,7 +165,7 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1F3A),
+          color: const Color(0xFF3F3CBF),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -341,86 +341,79 @@ class _CarCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 0),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1F3A),
           borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF271F98), // Dark Blue left
+              Color(0xFFD85876), // Pink right
+            ],
+          ),
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      car.fullName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Car image placeholder with blue glow effect
-                Container(
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.blue.withOpacity(0.3),
-                      ],
-                    ),
+                Text(
+                  car.fullName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Blue glow effect
-                      Container(
-                        height: 160,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.4),
-                              blurRadius: 30,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Car image from asset
-                      Image.asset(
-                        car.imageUrl.isNotEmpty
-                            ? car.imageUrl
-                            : 'assets/cars/default_car.jpg',
-                        height: 120,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.directions_car,
-                            size: 120,
-                            color: Color(0xFF2C3E50),
-                          );
-                        },
-                      ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Car image container
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2), 
+                    width: 1,
+                  ),
+                  gradient: const RadialGradient(
+                    center: Alignment.center,
+                    radius: 1.0,
+                    colors: [
+                      Color(0xFF7B68EE), // Bright center blue/purple
+                      Color(0xFF271F98), // Dark edges
                     ],
                   ),
                 ),
-              ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(11), // 1px less to fit inside border
+                  child: Image.asset(
+                    car.imageUrl.isNotEmpty
+                        ? car.imageUrl
+                        : 'assets/cars/default_car.jpg',
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.directions_car,
+                        size: 80,
+                        color: Colors.white70,
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ],
         ),

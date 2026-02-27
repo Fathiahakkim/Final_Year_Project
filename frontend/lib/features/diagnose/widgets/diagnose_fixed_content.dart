@@ -36,64 +36,25 @@ class DiagnoseFixedContent extends StatelessWidget {
     final cardBottom = keyboardHeight + safeAreaBottom;
     final cardTop = screenHeight - cardBottom - cardHeight;
 
-    // Element dimensions
+    // ── Layout Logic: Lock Car to Top Spacing to match OBD/MyCar Screens ──
+    final availableSpace = cardTop - safeAreaTop;
     final micHeight = 140.0;
     final carHeight = 150.0;
-    final carToMicSpacing = DiagnoseSpacing.spaceBetweenCarAndMic;
-    final micToCardSpacing = DiagnoseSpacing.cardClearance;
 
-    // Ensure minimum top spacing (accounting for safe area and app bar)
-    final minTop = safeAreaTop;
+    // 1. Lock car position exactly like OBD page (DiagnoseSpacing.topSpacing)
+    final finalCarTop = safeAreaTop + DiagnoseSpacing.topSpacing;
 
-    // CRITICAL: Mic must ALWAYS be above the card, never behind it
-    // Priority order:
-    // 1. Mic must stay above card with proper spacing (highest priority)
-    // 2. Car should maintain spacing with mic
-    // 3. Car should not go above minimum top spacing
+    // 2. Center the Voice Mic in the remaining space between the Car and the Card
+    final remainingSpaceForMic = cardTop - (finalCarTop + carHeight);
+    
+    // Default spacing if everything fits comfortably
+    double finalMicTop = finalCarTop + carHeight + DiagnoseSpacing.spaceBetweenCarAndMic;
 
-    // First, calculate the maximum mic top position to stay above card
-    final maxMicTop = cardTop - micToCardSpacing - micHeight;
-
-    // Ideal mic position - above card with proper spacing
-    double finalMicTop = maxMicTop;
-
-    // Calculate ideal car position based on mic
-    double finalCarTop = finalMicTop - carToMicSpacing - carHeight;
-
-    // If car would go above minimum top, constrain it and recalculate
-    if (finalCarTop < minTop) {
-      finalCarTop = minTop;
-      // Calculate minimum mic position to maintain spacing with car
-      final minMicTop = finalCarTop + carHeight + carToMicSpacing;
-
-      // Ensure mic stays above card (highest priority)
-      // If minMicTop would put mic behind card, prioritize keeping mic above card
-      if (minMicTop > maxMicTop) {
-        // Not enough space - prioritize mic above card
-        finalMicTop = maxMicTop;
-        // Recalculate car position, allowing it to potentially overlap with top constraint
-        finalCarTop = finalMicTop - carToMicSpacing - carHeight;
-        // Clamp car to minimum top, but mic will maintain its position above card
-        if (finalCarTop < minTop) {
-          finalCarTop = minTop;
-        }
-      } else {
-        // We have enough space - use the minimum mic position to maintain car spacing
-        finalMicTop = minMicTop;
-      }
-    }
-
-    // Final verification: Ensure mic is absolutely above the card
-    final micBottom = finalMicTop + micHeight;
-    if (micBottom > cardTop - micToCardSpacing) {
-      // Force mic above card as highest priority
-      finalMicTop = cardTop - micToCardSpacing - micHeight;
-      // Recalculate car accordingly
-      finalCarTop = finalMicTop - carToMicSpacing - carHeight;
-      // Clamp car to minimum top
-      if (finalCarTop < minTop) {
-        finalCarTop = minTop;
-      }
+    // If screen is squished (e.g. keyboard), force the mic into the exact center
+    // of the remaining space between the bottom of the car and the top of the card
+    if (remainingSpaceForMic < micHeight + DiagnoseSpacing.spaceBetweenCarAndMic) {
+        final gapMiddle = (finalCarTop + carHeight) + (remainingSpaceForMic / 2);
+        finalMicTop = gapMiddle - (micHeight / 2);
     }
 
     return SafeArea(

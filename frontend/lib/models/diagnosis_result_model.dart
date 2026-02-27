@@ -2,11 +2,15 @@ class DiagnosisResult {
   final List<DiagnosedIssue> issues;
   final DateTime timestamp;
   final SuppressionInfo? suppressionApplied;
+  final bool lowConfidence;
+  final String? message;
 
   DiagnosisResult({
     required this.issues,
     required this.timestamp,
     this.suppressionApplied,
+    this.lowConfidence = false,
+    this.message,
   });
 
   factory DiagnosisResult.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class DiagnosisResult {
                 json['suppression_applied'] as Map<String, dynamic>,
               )
               : null,
+      lowConfidence: json['low_confidence'] as bool? ?? false,
+      message: json['message'] as String?,
     );
   }
 
@@ -38,6 +44,8 @@ class DiagnosisResult {
       'timestamp': timestamp.toIso8601String(),
       if (suppressionApplied != null)
         'suppression_applied': suppressionApplied!.toJson(),
+      'low_confidence': lowConfidence,
+      if (message != null) 'message': message,
     };
   }
 }

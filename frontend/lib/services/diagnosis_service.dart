@@ -28,12 +28,20 @@ class DiagnosisService {
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
         return DiagnosisResult.fromJson(jsonResponse);
+      } else if (response.statusCode == 400) {
+        final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
+        throw DiagnosisException(
+          jsonResponse['error'] ?? 'Bad Request',
+          response.statusCode,
+        );
       } else {
         throw DiagnosisException(
           'Server error: ${response.statusCode}',
           response.statusCode,
         );
       }
+    } on DiagnosisException {
+      rethrow;
     } on FormatException catch (e) {
       throw DiagnosisException('Invalid response format: ${e.message}', null);
     } on http.ClientException catch (e) {

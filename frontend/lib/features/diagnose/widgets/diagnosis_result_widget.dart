@@ -21,6 +21,35 @@ class DiagnosisResultWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (diagnosisResult.lowConfidence) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.shade300),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.orange.shade800, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    diagnosisResult.message ?? 'Confidence is low. Please provide more details.',
+                    style: TextStyle(
+                      color: Colors.orange.shade900,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         ...issues.asMap().entries.map((entry) {
           final index = entry.key;

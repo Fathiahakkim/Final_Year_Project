@@ -60,6 +60,9 @@ class DiagnoseHandlers {
       final sortedResult = DiagnosisResult(
         issues: sortedIssues,
         timestamp: diagnosisResult.timestamp,
+        suppressionApplied: diagnosisResult.suppressionApplied,
+        lowConfidence: diagnosisResult.lowConfidence,
+        message: diagnosisResult.message,
       );
 
       controller.setDiagnosisResult(sortedResult);
@@ -78,9 +81,11 @@ class DiagnoseHandlers {
     } catch (e) {
       // Stop loading state and set error message
       controller.setLoading(false);
-      controller.setError(
-        'Backend not connected. Please try again later.',
-      );
+      if (e is DiagnosisException && e.statusCode == 400) {
+        controller.setError(e.message);
+      } else {
+        controller.setError('Backend not connected');
+      }
       print('Diagnosis error: $e');
     }
   }
