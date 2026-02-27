@@ -1,22 +1,6 @@
 /// Maps car make_model keys to their corresponding asset image paths.
-/// Key format: "${make}_${model}" (e.g., "Toyota_Camry")
+/// Key format: "${make}_${model}" (e.g., "BMW_3 Series")
 const Map<String, String> carImageMap = {
-  // Toyota models
-  'Toyota_Corolla': 'assets/cars/toyoto_corolla.png',
-  'Toyota_Camry': 'assets/cars/camry_toyota.png',
-
-  // Honda models
-  'Honda_Civic': 'assets/cars/honda.png',
-  'Honda_Accord': 'assets/cars/honda.png',
-  'Honda_CR-V': 'assets/cars/honda.png',
-  'Honda_Pilot': 'assets/cars/honda.png',
-  'Honda_Odyssey': 'assets/cars/honda.png',
-  'Honda_Fit': 'assets/cars/honda.png',
-  'Honda_HR-V': 'assets/cars/honda.png',
-  'Honda_Passport': 'assets/cars/honda.png',
-  'Honda_Ridgeline': 'assets/cars/honda.png',
-  'Honda_Insight': 'assets/cars/honda.png',
-
   // BMW models
   'BMW_3 Series': 'assets/cars/bmw.png',
   'BMW_5 Series': 'assets/cars/bmw.png',
@@ -29,18 +13,51 @@ const Map<String, String> carImageMap = {
   'BMW_iX': 'assets/cars/bmw.png',
   'BMW_Z4': 'assets/cars/bmw.png',
 
-  // Hyundai models
-  'Hyundai_Elantra': 'assets/cars/hyundai.jpg',
-  'Hyundai_Sonata': 'assets/cars/hyundai.jpg',
-  'Hyundai_Tucson': 'assets/cars/hyundai.jpg',
-  'Hyundai_Santa Fe': 'assets/cars/hyundai.jpg',
-  'Hyundai_Palisade': 'assets/cars/hyundai.jpg',
-  'Hyundai_Kona': 'assets/cars/hyundai.jpg',
-  'Hyundai_Venue': 'assets/cars/hyundai.jpg',
-  'Hyundai_Ioniq': 'assets/cars/hyundai.jpg',
-  'Hyundai_Genesis': 'assets/cars/hyundai.jpg',
-  'Hyundai_Veloster': 'assets/cars/hyundai.jpg',
+  // Mercedes-Benz models
+  'Mercedes-Benz_C-Class': 'assets/cars/benz.webp',
+  'Mercedes-Benz_E-Class': 'assets/cars/benz.webp',
+  'Mercedes-Benz_S-Class': 'assets/cars/benz.webp',
+  'Mercedes-Benz_GLE': 'assets/cars/benz.webp',
+  'Mercedes-Benz_GLC': 'assets/cars/benz.webp',
+  'Mercedes-Benz_GLS': 'assets/cars/benz.webp',
+  'Mercedes-Benz_A-Class': 'assets/cars/benz.webp',
+  'Mercedes-Benz_G-Class': 'assets/cars/benz.webp',
+  'Mercedes-Benz_CLA': 'assets/cars/benz.webp',
+  'Mercedes-Benz_AMG GT': 'assets/cars/benz.webp',
+
+  // Audi models
+  'Audi_A4': 'assets/cars/audia4.webp',
+  'Audi_A6': 'assets/cars/audia4.webp',
+  'Audi_Q5': 'assets/cars/audia4.webp',
+  'Audi_Q7': 'assets/cars/audia4.webp',
+  'Audi_Q3': 'assets/cars/audia4.webp',
+  'Audi_A3': 'assets/cars/audia4.webp',
+  'Audi_e-tron': 'assets/cars/audia4.webp',
+  'Audi_TT': 'assets/cars/audia4.webp',
+  'Audi_A8': 'assets/cars/audia4.webp',
+  'Audi_Q8': 'assets/cars/audia4.webp',
+
+  // Porsche models
+  'Porsche_911': 'assets/cars/porsche.webp',
+  'Porsche_Cayenne': 'assets/cars/porsche.webp',
+  'Porsche_Macan': 'assets/cars/porsche.webp',
+  'Porsche_Panamera': 'assets/cars/porsche.webp',
+  'Porsche_Taycan': 'assets/cars/porsche.webp',
+  'Porsche_718 Cayman': 'assets/cars/porsche.webp',
+  'Porsche_718 Boxster': 'assets/cars/porsche.webp',
+
+  // Ford models
+  'Ford_F-150': 'assets/cars/ford_img.webp',
+  'Ford_Escape': 'assets/cars/ford_img.webp',
+  'Ford_Explorer': 'assets/cars/ford_img.webp',
+  'Ford_Mustang': 'assets/cars/ford_img.webp',
+  'Ford_Edge': 'assets/cars/ford_img.webp',
+  'Ford_Expedition': 'assets/cars/ford_img.webp',
+  'Ford_Ranger': 'assets/cars/ford_img.webp',
+  'Ford_Fusion': 'assets/cars/ford_img.webp',
+  'Ford_Bronco': 'assets/cars/ford_img.webp',
+  'Ford_Maverick': 'assets/cars/ford_img.webp',
 };
 
 /// Default image path used when no matching car image is found.
-const String defaultCarImage = 'assets/cars/default_car.jpg';
+const String defaultCarImage = 'assets/cars/bmw.png';

@@ -10,8 +10,9 @@ import '../../state/app_state.dart';
 
 class DiagnosePage extends StatefulWidget {
   final AppState appState;
+  final VoidCallback? onNavigateHome;
 
-  const DiagnosePage({super.key, required this.appState});
+  const DiagnosePage({super.key, required this.appState, this.onNavigateHome});
 
   @override
   State<DiagnosePage> createState() => _DiagnosePageState();
@@ -47,7 +48,7 @@ class _DiagnosePageState extends State<DiagnosePage> {
     final cardHeight = DiagnoseSpacing.calculateCardHeight(screenHeight);
 
     return Scaffold(
-      appBar: const DiagnoseAppBar(),
+      appBar: DiagnoseAppBar(onNavigateHome: widget.onNavigateHome),
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: true,
       body: DiagnoseBackground(
@@ -59,6 +60,7 @@ class _DiagnosePageState extends State<DiagnosePage> {
               handlers: _handlers,
               cardHeight: cardHeight,
               keyboardHeight: keyboardHeight,
+              appState: widget.appState,
             ),
             DiagnoseCardOverlay(
               controller: _controller,

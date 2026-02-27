@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'theme/my_car_theme.dart';
 import 'widgets/my_car_app_bar.dart';
 import 'widgets/my_car_background.dart';
@@ -11,11 +12,13 @@ import '../../state/app_state.dart';
 import '../../models/car_model.dart';
 import '../../models/car.dart';
 import '../../utils/car_image_map.dart';
+import '../../utils/car_glb_map.dart';
 
 class MyCarPage extends StatefulWidget {
   final AppState appState;
+  final VoidCallback? onNavigateHome;
 
-  const MyCarPage({super.key, required this.appState});
+  const MyCarPage({super.key, required this.appState, this.onNavigateHome});
 
   @override
   State<MyCarPage> createState() => _MyCarPageState();
@@ -112,6 +115,7 @@ class _MyCarPageState extends State<MyCarPage> {
       appBar: MyCarAppBar(
         onAddCar: _handleAddCar,
         isAddCarMode: _isCardExpanded,
+        onNavigateHome: widget.onNavigateHome,
       ),
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: true,
@@ -144,46 +148,43 @@ class _MyCarPageState extends State<MyCarPage> {
                 child: Column(
                   children: [
                     SizedBox(height: topPadding),
-                    // Car image or fallback icon - circular white outline
-                    Container(
-                      width: MyCarTheme.carIconSize,
-                      height: MyCarTheme.carIconSize,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.25),
-                          width: 2.5,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: Builder(
-                          builder: (context) {
-                            final selectedCar = widget.appState.primaryCar;
-                            if (selectedCar != null) {
-                              return Image.asset(
-                                selectedCar.imageUrl.isNotEmpty
-                                    ? selectedCar.imageUrl
-                                    : 'assets/cars/default_car.jpg',
-                                height: MyCarTheme.carIconSize,
-                                width: MyCarTheme.carIconSize,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
+                    // 3D car model or fallback icon
+                    Builder(
+                      builder: (context) {
+                        final selectedCar = widget.appState.primaryCar;
+                        final glbPath = resolveCarGlb(selectedCar?.make);
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 160,
+                          child: selectedCar != null
+                              ? ModelViewer(
+                                  src: glbPath,
+                                  alt: '${selectedCar.make} ${selectedCar.model}',
+                                  autoRotate: true,
+                                  cameraControls: true,
+                                  disableZoom: false,
+                                  cameraOrbit: '0deg 75deg 105%',
+                                  fieldOfView: '30deg',
+                                  backgroundColor: Colors.transparent,
+                                )
+                              : Container(
+                                  width: MyCarTheme.carIconSize,
+                                  height: MyCarTheme.carIconSize,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.25),
+                                      width: 2.5,
+                                    ),
+                                  ),
+                                  child: Icon(
                                     Icons.directions_car_outlined,
                                     size: MyCarTheme.carIconSize * 0.55,
                                     color: Colors.white.withOpacity(0.7),
-                                  );
-                                },
-                              );
-                            }
-                            return Icon(
-                              Icons.directions_car_outlined,
-                              size: MyCarTheme.carIconSize * 0.55,
-                              color: Colors.white.withOpacity(0.7),
-                            );
-                          },
-                        ),
-                      ),
+                                  ),
+                                ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
                     // "Add Car" title

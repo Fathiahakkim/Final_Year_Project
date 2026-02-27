@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class MyCarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onAddCar;
   final bool isAddCarMode;
+  final VoidCallback? onNavigateHome;
 
-  const MyCarAppBar({super.key, this.onAddCar, this.isAddCarMode = false});
+  const MyCarAppBar({super.key, this.onAddCar, this.isAddCarMode = false, this.onNavigateHome});
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +16,8 @@ class MyCarAppBar extends StatelessWidget implements PreferredSizeWidget {
           if (isAddCarMode && onAddCar != null) {
             // If in add car mode, cancel it instead of navigating back
             onAddCar!();
-          } else {
-            Navigator.of(context).pop();
+          } else if (onNavigateHome != null) {
+            onNavigateHome!();
           }
         },
       ),

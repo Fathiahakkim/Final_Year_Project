@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'controllers/obd_controller.dart';
 import 'models/obd_prediction_model.dart';
 import 'widgets/obd_app_bar.dart';
 import 'widgets/obd_background.dart';
-import 'widgets/obd_adapter_graphic.dart';
 import 'widgets/obd_white_card.dart';
 import 'theme/obd_theme.dart';
 import '../diagnose/utils/diagnose_spacing.dart';
+import '../../state/app_state.dart';
+import '../../utils/car_glb_map.dart';
 
 class OBDPage extends StatefulWidget {
-  const OBDPage({super.key});
+  final AppState appState;
+  final VoidCallback? onNavigateHome;
+
+  const OBDPage({super.key, required this.appState, this.onNavigateHome});
 
   @override
   State<OBDPage> createState() => _OBDPageState();
@@ -38,11 +43,11 @@ class _OBDPageState extends State<OBDPage> {
     final keyboardHeight = mediaQuery.viewInsets.bottom;
     final cardHeight = DiagnoseSpacing.calculateCardHeight(screenHeight);
 
-    // Calculate minimum top position for adapter graphic
+    // Calculate minimum top position for 3D car model
     final minTop = safeAreaTop + DiagnoseSpacing.topSpacing;
 
     return Scaffold(
-      appBar: const OBDAppBar(),
+      appBar: OBDAppBar(onNavigateHome: widget.onNavigateHome),
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: true,
       body: OBDBackground(
@@ -58,28 +63,44 @@ class _OBDPageState extends State<OBDPage> {
                   ? screenHeight * 0.55
                   : cardHeight;
 
-              // Push the adapter graphic higher when card expands
-              final adapterTop = hasResults
+              // Push the 3D car model higher when card expands
+              final carTop = hasResults
                   ? (minTop - safeAreaTop) * 0.3
                   : minTop - safeAreaTop;
 
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Adapter graphic — animates upward when results arrive
+                  // 3D Car model — animates upward when results arrive
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeInOutCubic,
-                    top: adapterTop,
+                    top: carTop,
                     left: 0,
                     right: 0,
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: OBDTheme.horizontalPadding,
-                        ),
-                        child: OBDAdapterGraphic(),
-                      ),
+                    child: ListenableBuilder(
+                      listenable: widget.appState,
+                      builder: (context, child) {
+                        final selectedCar = widget.appState.primaryCar;
+                        final glbPath = resolveCarGlb(selectedCar?.make ?? 'BMW');
+
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 160,
+                          child: ModelViewer(
+                            src: glbPath,
+                            alt: selectedCar != null
+                                ? '${selectedCar.make} ${selectedCar.model}'
+                                : 'Car Model',
+                            autoRotate: true,
+                            cameraControls: true,
+                            disableZoom: false,
+                            cameraOrbit: '0deg 75deg 105%',
+                            fieldOfView: '30deg',
+                            backgroundColor: Colors.transparent,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   // White card overlay at bottom — expands on results

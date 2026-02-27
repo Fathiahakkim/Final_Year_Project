@@ -12,58 +12,17 @@ class AddCarFormCard extends StatefulWidget {
 }
 
 class _AddCarFormCardState extends State<AddCarFormCard> {
-  // Sample car makes database
+  // Car makes database
   final List<String> _carMakes = [
-    'Toyota',
-    'Honda',
-    'Ford',
     'BMW',
     'Mercedes-Benz',
     'Audi',
-    'Volkswagen',
-    'Nissan',
-    'Hyundai',
-    'Chevrolet',
+    'Porsche',
+    'Ford',
   ];
 
-  // Sample car models database (mapped by make)
+  // Car models database (mapped by make)
   final Map<String, List<String>> _carModels = {
-    'Toyota': [
-      'Corolla',
-      'Camry',
-      'RAV4',
-      'Highlander',
-      'Prius',
-      'Tacoma',
-      'Tundra',
-      'Sienna',
-      '4Runner',
-      'Avalon',
-    ],
-    'Honda': [
-      'Civic',
-      'Accord',
-      'CR-V',
-      'Pilot',
-      'Odyssey',
-      'Fit',
-      'HR-V',
-      'Passport',
-      'Ridgeline',
-      'Insight',
-    ],
-    'Ford': [
-      'F-150',
-      'Escape',
-      'Explorer',
-      'Mustang',
-      'Edge',
-      'Expedition',
-      'Ranger',
-      'Fusion',
-      'Bronco',
-      'Maverick',
-    ],
     'BMW': [
       '3 Series',
       '5 Series',
@@ -88,59 +47,43 @@ class _AddCarFormCardState extends State<AddCarFormCard> {
       'CLA',
       'AMG GT',
     ],
-    'Audi': ['A4', 'A6', 'Q5', 'Q7', 'Q3', 'A3', 'e-tron', 'TT', 'A8', 'Q8'],
-    'Volkswagen': [
-      'Jetta',
-      'Passat',
-      'Tiguan',
-      'Atlas',
-      'Golf',
-      'Arteon',
-      'ID.4',
-      'Taos',
-      'Atlas Cross Sport',
-      'Beetle',
+    'Audi': [
+      'A4',
+      'A6',
+      'Q5',
+      'Q7',
+      'Q3',
+      'A3',
+      'e-tron',
+      'TT',
+      'A8',
+      'Q8',
     ],
-    'Nissan': [
-      'Altima',
-      'Sentra',
-      'Rogue',
-      'Pathfinder',
-      'Frontier',
-      'Titan',
-      'Murano',
-      'Maxima',
-      'Armada',
-      'Kicks',
+    'Porsche': [
+      '911',
+      'Cayenne',
+      'Macan',
+      'Panamera',
+      'Taycan',
+      '718 Cayman',
+      '718 Boxster',
     ],
-    'Hyundai': [
-      'Elantra',
-      'Sonata',
-      'Tucson',
-      'Santa Fe',
-      'Palisade',
-      'Kona',
-      'Venue',
-      'Ioniq',
-      'Genesis',
-      'Veloster',
-    ],
-    'Chevrolet': [
-      'Silverado',
-      'Equinox',
-      'Tahoe',
-      'Malibu',
-      'Traverse',
-      'Cruze',
-      'Suburban',
-      'Camaro',
-      'Corvette',
-      'Bolt',
+    'Ford': [
+      'F-150',
+      'Escape',
+      'Explorer',
+      'Mustang',
+      'Edge',
+      'Expedition',
+      'Ranger',
+      'Fusion',
+      'Bronco',
+      'Maverick',
     ],
   };
 
-  String? _selectedMake = 'Toyota';
-  String? _selectedModel = 'Corolla';
+  String? _selectedMake = 'BMW';
+  String? _selectedModel = '3 Series';
   String? _selectedYear = '2020';
   final TextEditingController _licensePlateController = TextEditingController();
 

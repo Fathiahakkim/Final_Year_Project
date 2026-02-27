@@ -35,9 +35,9 @@ class _NavigationScaffoldState extends State<NavigationScaffold> {
         appState: widget.appState,
         onNavigate: navigateToTab,
       ),
-      MyCarsScreen(appState: widget.appState),
-      DiagnoseScreen(appState: widget.appState),
-      OBDDataScreen(appState: widget.appState),
+      MyCarsScreen(appState: widget.appState, onNavigateHome: () => navigateToTab(0)),
+      DiagnoseScreen(appState: widget.appState, onNavigateHome: () => navigateToTab(0)),
+      OBDDataScreen(appState: widget.appState, onNavigateHome: () => navigateToTab(0)),
       AccountScreen(appState: widget.appState),
     ]);
   }

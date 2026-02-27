@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 class OBDAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const OBDAppBar({super.key});
+  final VoidCallback? onNavigateHome;
+
+  const OBDAppBar({super.key, this.onNavigateHome});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => onNavigateHome?.call(),
       ),
       title: const Text(
         'OBD Data',

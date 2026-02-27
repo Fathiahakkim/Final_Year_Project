@@ -5,12 +5,14 @@ import 'car_visual.dart';
 import 'voice_button.dart';
 import '../handlers/diagnose_handlers.dart';
 import '../../voice/voice_controller.dart';
+import '../../../state/app_state.dart';
 
 class DiagnoseFixedContent extends StatelessWidget {
   final DiagnoseController controller;
   final DiagnoseHandlers handlers;
   final double cardHeight;
   final double keyboardHeight;
+  final AppState appState;
 
   const DiagnoseFixedContent({
     super.key,
@@ -18,6 +20,7 @@ class DiagnoseFixedContent extends StatelessWidget {
     required this.handlers,
     required this.cardHeight,
     required this.keyboardHeight,
+    required this.appState,
   });
 
   @override
@@ -103,7 +106,7 @@ class DiagnoseFixedContent extends StatelessWidget {
             top: finalCarTop - safeAreaTop,
             left: 0,
             right: 0,
-            child: CarVisual(key: controller.carKey),
+            child: CarVisual(key: controller.carKey, appState: appState),
           ),
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
