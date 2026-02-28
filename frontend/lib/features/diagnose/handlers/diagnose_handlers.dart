@@ -39,6 +39,7 @@ class DiagnoseHandlers {
     controller.setMessageSent(true);
 
     controller.messageController.clear();
+    controller.setDiagnosisResult(null); // Fix: Clear previous prediction!
     controller.setLoading(true);
 
     try {

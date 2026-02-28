@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                     child: _ActionCard(
                       customIcon: _LiveDataIcon(),
                       title: 'Live Data',
-                      description: 'View real-time vehicle sensor readings.',
+                      description: 'View Real-time engine insight by OBD data.',
                       onTap: () {
                         // Navigate to OBD Data screen (index 3)
                         onNavigate(3);
