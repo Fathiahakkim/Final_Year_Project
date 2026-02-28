@@ -123,11 +123,12 @@ class Predictor:
         with torch.no_grad():
             logits = self.model(**inputs).logits
 
-        probabilities = torch.softmax(logits, dim=-1)[0].cpu().numpy()
+        probabilities = torch.sigmoid(logits)[0].cpu().numpy()
 
         predictions = [(label, float(prob))
                        for label, prob in zip(self.classes_, probabilities)]
 
+        # Sort remaining labels descending
         predictions.sort(key=lambda x: x[1], reverse=True)
 
         # Return only top 3

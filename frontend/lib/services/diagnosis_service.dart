@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/diagnosis_result_model.dart';
+import '../core/obd_cache.dart';
 
 class DiagnosisService {
   // IMPORTANT: Replace with your PC's local IPv4 address for Android device testing
@@ -15,13 +16,18 @@ class DiagnosisService {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
 
-      final response = await http
-          .post(
-            uri,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'complaint': complaint}),
-          )
-          .timeout(timeout);
+        final bodyPayload = {
+          'complaint': complaint,
+          'obd_data': ObdCache.latestObd,
+        };
+
+        final response = await http
+            .post(
+              uri,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode(bodyPayload),
+            )
+            .timeout(timeout);
 
       print('RAW BACKEND RESPONSE: ${response.body}');
 

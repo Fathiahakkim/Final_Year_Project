@@ -58,7 +58,7 @@ class DiagnoseCardOverlay extends StatelessWidget {
               complaintController: controller.complaintController,
               messageController: controller.messageController,
               onComplaintChanged: handlers.onComplaintChanged,
-              onSend: handlers.onSend,
+              onSend: () => handlers.onSend(context),
               onVoiceTap: () async {
                 await voiceController.start(
                   onText: (text) {

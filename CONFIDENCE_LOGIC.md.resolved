@@ -1,0 +1,77 @@
+# Classification Confidence Logic Documentation
+
+This document explains the confidence handling methodology currently implemented for the Automotive Fault Detection API.
+
+## 1. Backend: ML Probability Output
+
+The backbone of the natural language pipeline handles input classification through a fine-tuned HuggingFace `DistilBERT` model.
+The underlying changes were implemented in [backend/app/models/predictor.py](file:///c:/Final_Year_Project/backend/app/models/predictor.py).
+
+### Shift to Sigmoid Distribution
+The model originally used `torch.softmax()` as its final activation layer. 
+Softmax produces a sum-to-one uniform distribution, which implies Mutually Exclusive classification. This means if one label becomes highly likely, all other labels are squashed towards 0.0. 
+
+A vehicle complaint can exhibit features of multiple faults simultaneously (e.g., both "ENGINE" and "ELECTRICAL SYSTEM"). We updated the inference logic to `torch.sigmoid()`.
+
+*   **Function**: Computes the likelihood of each fault domain independently.
+*   **Result**: Probabilities no longer sum to `1.0`. They range fully from `[0.0, 1.0]`.
+*   **Behavior**: Predicts the highest probable individual overlaps and returns the top 3 faults. No probability thresholding/clipping is strictly applied at the model level; it always generates 3 predictions sorted descending.
+
+```python
+# Predictor Inference snippet (predictor.py)
+with torch.no_grad():
+    logits = self.model(**inputs).logits
+
+# Calculate sigmoid instead of softmax
+probabilities = torch.sigmoid(logits)[0].cpu().numpy()
+
+predictions = [(label, float(prob))
+               for label, prob in zip(self.classes_, probabilities)]
+predictions.sort(key=lambda x: x[1], reverse=True)
+return predictions[:3]
+```
+
+## 2. Backend: Hybrid Route Verification
+
+The REST Endpoint ([backend/app/api/routes/diagnose.py](file:///c:/Final_Year_Project/backend/app/api/routes/diagnose.py)) is tasked with analyzing the predictions passed by the model to determine whether a "Low Confidence" flag needs to be triggered. 
+
+With `sigmoid` operations, the comparison gap between the 1st and 2nd probability is generally irrelevant, as they independently measure domain likelihoods.
+
+*   The flag calculates the highest possible returned probability, `top1`.
+*   If `top1 < 0.45` (meaning no individual category scored above a 45% likelihood based on the input text), the `low_confidence` boolean flag triggers `True`.
+*   The API returns an explicit string message informing the UI/User that further details are needed.
+
+```python
+# Hybrid logic block (diagnose.py)
+top1 = final_predictions[0][1] if len(final_predictions) > 0 else 0.0
+
+low_confidence = top1 < 0.45
+
+if len(final_predictions) == 0:
+    message = "Unable to confidently detect a fault. Please provide more detailed symptoms."
+else:
+    message = (
+        "The prediction confidence is low. Please provide more details about the issue."
+        if low_confidence else None
+    )
+```
+
+## 3. Frontend: Diagnostic UI Response
+
+The Flutter application dynamically listens to the backend payload and routes the UI appropriately to maintain user trust without entirely discarding functional data.
+
+Implemented in [frontend/lib/features/diagnose/widgets/diagnosis_result_widget.dart](file:///c:/Final_Year_Project/frontend/lib/features/diagnose/widgets/diagnosis_result_widget.dart).
+
+### Scenario 1: Empty Issues & Validation Errors
+If the `issues` payload returns empty (e.g. strict text-filtering rejecting the prompt as bad JSON / validation failure):
+*   Draws a solid `Red` error banner displaying backend server message (e.g. _"Please enter a valid vehicle complaint."_) explicitly.
+*   Hides all internal result containers to avoid broken displays.
+
+### Scenario 2: Low Confidence Alert
+If the model returns predictions, but the `.lowConfidence` boolean payload is set to `True`:
+*   Renders a static `Orange` low-confidence banner _above_ the prediction stack to immediately capture the user's attention.
+*   Retains the Top 3 predictions normally below it. This enables the user to view the AI's "closest guess" while understanding it carries a high margin of error.
+
+### Scenario 3: High Confidence Alert
+If issues exist and confidence represents high values:
+*   Banners are hidden. Top 3 results print directly.

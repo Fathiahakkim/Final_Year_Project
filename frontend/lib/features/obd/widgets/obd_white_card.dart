@@ -108,45 +108,121 @@ class _OBDCardContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // ── Upload button ────────────────────────────────────────
-          ValueListenableBuilder<bool>(
-            valueListenable: controller.isUploading,
-            builder: (context, isUploading, _) {
-              return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isUploading
-                      ? null
-                      : () => controller.pickAndUploadCSV(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: OBDTheme.accentBlue,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        OBDTheme.accentBlue.withOpacity(0.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: isUploading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'UPLOAD FILE',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                ),
+          // ── Upload State & Actions ──────────────────────────────
+          ListenableBuilder(
+            listenable: controller,
+            builder: (context, _) {
+              final isUploading = controller.isUploading.value;
+              final fileName = controller.uploadedFileName.value;
+              final isPredicting = controller.isPredicting.value;
+              final hasCachedData = controller.uploadedFileName.value != null; // Simpler binding checking if file was parsed locally
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   if (fileName != null) ...[
+                     Row(
+                       children: [
+                         Icon(Icons.insert_drive_file, size: 16, color: OBDTheme.accentBlue),
+                         const SizedBox(width: 8),
+                         Expanded(
+                           child: Text(
+                             'Uploaded: $fileName',
+                             style: TextStyle(
+                               color: OBDTheme.accentBlue,
+                               fontWeight: FontWeight.w600,
+                               fontSize: 14,
+                             ),
+                             maxLines: 1,
+                             overflow: TextOverflow.ellipsis,
+                           ),
+                         ),
+                         InkWell(
+                           onTap: () => controller.clearUploadedFile(),
+                           borderRadius: BorderRadius.circular(12),
+                           child: const Padding(
+                             padding: EdgeInsets.all(4.0),
+                             child: Icon(Icons.close, size: 18, color: Colors.grey),
+                           ),
+                         ),
+                       ],
+                     ),
+                     const SizedBox(height: 12),
+                   ],
+                   Row(
+                     children: [
+                       Expanded(
+                         flex: 5,
+                         child: SizedBox(
+                           height: 50,
+                           child: ElevatedButton(
+                             onPressed: isUploading || isPredicting
+                                 ? null
+                                 : () => controller.pickAndUploadCSV(),
+                             style: ElevatedButton.styleFrom(
+                               backgroundColor: OBDTheme.accentBlue,
+                               foregroundColor: Colors.white,
+                               disabledBackgroundColor:
+                                   OBDTheme.accentBlue.withOpacity(0.5),
+                               shape: RoundedRectangleBorder(
+                                 borderRadius: BorderRadius.circular(25.0),
+                               ),
+                               elevation: 0,
+                             ),
+                             child: isUploading
+                                 ? const SizedBox(
+                                     width: 24,
+                                     height: 24,
+                                     child: CircularProgressIndicator(
+                                       strokeWidth: 2.5,
+                                       color: Colors.white,
+                                     ),
+                                   )
+                                 : const Text(
+                                     'UPLOAD FILE',
+                                     style: TextStyle(
+                                       fontSize: 15,
+                                       fontWeight: FontWeight.w600,
+                                       letterSpacing: 1.0,
+                                     ),
+                                   ),
+                           ),
+                         ),
+                       ),
+                       const SizedBox(width: 12),
+                       SizedBox(
+                         width: 50,
+                         height: 50,
+                         child: ElevatedButton(
+                           onPressed: !hasCachedData || isPredicting || isUploading
+                               ? null
+                               : () => controller.sendOBDData(),
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: OBDTheme.accentBlue,
+                             foregroundColor: Colors.white,
+                             disabledBackgroundColor: Colors.grey.shade300,
+                             disabledForegroundColor: Colors.grey.shade500,
+                             padding: EdgeInsets.zero,
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(16.0),
+                             ),
+                             elevation: 0,
+                           ),
+                           child: isPredicting
+                               ? const SizedBox(
+                                   width: 20,
+                                   height: 20,
+                                   child: CircularProgressIndicator(
+                                     strokeWidth: 2.0,
+                                     color: Colors.white,
+                                   ),
+                                 )
+                               : const Icon(Icons.send, size: 22),
+                         ),
+                       ),
+                     ],
+                   ),
+                ],
               );
             },
           ),

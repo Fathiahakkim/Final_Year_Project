@@ -1,24 +1,26 @@
 """Request schemas for API endpoints."""
+from typing import Optional, Dict
 from pydantic import BaseModel, Field, field_validator
-
 
 class DiagnosisRequest(BaseModel):
     """Request schema for diagnosis endpoint."""
-    
-    complaint: str = Field(
-        ...,
-        min_length=1,
+
+    complaint: Optional[str] = Field(
+        default=None,
         max_length=500,
         description="Natural language description of the automotive complaint",
         example="Engine is shaking when idling."
     )
-    
+
+    obd_data: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Optional dictionary containing extracted OBD sensor features"
+    )
+
     @field_validator('complaint')
     @classmethod
-    def validate_complaint(cls, v: str) -> str:
-        """Validate complaint is not empty after stripping."""
+    def validate_complaint(cls, v):
+        if v is None:
+            return None
         stripped = v.strip()
-        if not stripped:
-            raise ValueError("Complaint cannot be empty")
-        return stripped
-
+        return stripped if stripped else None

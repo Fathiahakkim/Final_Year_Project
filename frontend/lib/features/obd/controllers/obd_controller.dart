@@ -5,6 +5,8 @@ import '../models/obd_metrics_model.dart';
 import '../models/obd_dtc_model.dart';
 import '../models/obd_prediction_model.dart';
 import '../services/obd_api_service.dart';
+import '../../../core/obd_cache.dart';
+import '../../../services/diagnosis_service.dart';
 
 class OBDController extends ChangeNotifier {
   final ValueNotifier<bool> isConnected = ValueNotifier<bool>(true);
@@ -33,9 +35,11 @@ class OBDController extends ChangeNotifier {
   final OBDApiService _apiService = OBDApiService();
 
   final ValueNotifier<bool> isUploading = ValueNotifier<bool>(false);
+  final ValueNotifier<String?> uploadedFileName = ValueNotifier<String?>(null);
   final ValueNotifier<OBDPredictionResult?> predictionResult =
       ValueNotifier<OBDPredictionResult?>(null);
   final ValueNotifier<String?> uploadError = ValueNotifier<String?>(null);
+  final ValueNotifier<bool> isPredicting = ValueNotifier<bool>(false);
 
   Timer? _updateTimer;
 
@@ -82,48 +86,122 @@ class OBDController extends ChangeNotifier {
       }
 
       final pickedFile = result.files.first;
-      final fileName = pickedFile.name;
-
-      debugPrint('[OBD] Platform: kIsWeb=$kIsWeb');
-      debugPrint('[OBD] File name: $fileName');
-      debugPrint('[OBD] bytes is null: ${pickedFile.bytes == null}');
-      debugPrint('[OBD] path  is null: ${pickedFile.path == null}');
-
+      
       // Reset previous state
       uploadError.value = null;
       predictionResult.value = null;
+      uploadedFileName.value = pickedFile.name;
       isUploading.value = true;
 
-      OBDPredictionResult prediction;
-
       if (pickedFile.bytes != null) {
-        // Web always, Android sometimes — use bytes
-        debugPrint('[OBD] Uploading via bytes (${pickedFile.bytes!.length} bytes)');
-        prediction = await _apiService.predictFromBytes(
-          pickedFile.bytes!,
-          fileName,
-        );
-      } else if (pickedFile.path != null) {
-        // Android/iOS fallback — use file path
-        debugPrint('[OBD] Uploading via path: ${pickedFile.path}');
-        prediction = await _apiService.predictFromPath(pickedFile.path!);
+        final parsedFeatureMap = _parseCSV(pickedFile.bytes!);
+        
+        if (parsedFeatureMap.isEmpty) {
+          uploadError.value = 'Failed to parse CSV or file is empty.';
+        } else {
+          ObdCache.set(parsedFeatureMap);
+          debugPrint('[OBD] Cached ${parsedFeatureMap.length} features globally.');
+          // Update UI metrics state based on parsed data (Optional but good UX)
+          if (parsedFeatureMap.containsKey('rpm_mean')) {
+             metrics.value = OBDMetricsModel(
+               rpm: parsedFeatureMap['rpm_mean']?.toDouble() ?? metrics.value.rpm,
+               coolantTemp: parsedFeatureMap['coolant_mean']?.toDouble() ?? metrics.value.coolantTemp,
+               batteryVoltage: parsedFeatureMap['battery_voltage_mean'] ?? metrics.value.batteryVoltage,
+               throttlePosition: parsedFeatureMap['throttle_mean']?.toDouble() ?? metrics.value.throttlePosition,
+             );
+          }
+        }
       } else {
-        throw Exception(
-          'Cannot read selected file — both bytes and path are null.',
-        );
+        throw Exception('Cannot read selected file — bytes are null.');
       }
-
-      predictionResult.value = prediction;
-      debugPrint('[OBD] Prediction received: ${prediction.topFaults.length} faults');
-    } on OBDApiException catch (e) {
-      uploadError.value = e.message;
-      debugPrint('[OBD] API error: ${e.message}');
     } catch (e) {
       uploadError.value = 'Unexpected error: $e';
       debugPrint('[OBD] Unexpected error: $e');
+      uploadedFileName.value = null;
     } finally {
       isUploading.value = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> sendOBDData() async {
+    if (ObdCache.latestObd == null) return;
+    try {
+      isPredicting.value = true;
+      uploadError.value = null;
+      predictionResult.value = null;
+
+      // Pass empty string, backend logic maps "" to None/null for hybrid execution
+      final diagnosisService = DiagnosisService();
+      final diagResult = await diagnosisService.diagnoseComplaint('');
+
+      // Map global DiagnosisResult back into local OBD card UI shape effortlessly
+      final converted = OBDPredictionResult(
+        source: 'OBD-Only Inference',
+        topFaults: diagResult.predictions
+            .map((p) => OBDFaultPrediction(fault: p.name, confidence: p.confidence))
+            .toList(),
+      );
+
+      predictionResult.value = converted;
+    } catch (e) {
+      uploadError.value = 'Prediction failed: $e';
+    } finally {
+      isPredicting.value = false;
+    }
+  }
+
+  void clearUploadedFile() {
+    uploadedFileName.value = null;
+    predictionResult.value = null;
+    uploadError.value = null;
+    ObdCache.clear();
+    
+    // Reset metrics to an empty default state
+    metrics.value = OBDMetricsModel(
+      rpm: 2200,
+      coolantTemp: 195,
+      batteryVoltage: 13.7,
+      throttlePosition: 36,
+    );
+    notifyListeners();
+  }
+
+  Map<String, double> _parseCSV(Uint8List bytes) {
+    try {
+      final String content = String.fromCharCodes(bytes);
+      final List<String> lines = content.split(RegExp(r'\r?\n')).where((line) => line.trim().isNotEmpty).toList();
+      if (lines.length < 2) return {};
+      
+      final List<String> headers = lines[0].split(',').map((e) => e.trim()).toList();
+      final Map<String, List<double>> colValues = {for (var h in headers) h: []};
+      
+      for (int i = 1; i < lines.length; i++) {
+        final List<String> values = lines[i].split(',');
+        for (int j = 0; j < headers.length; j++) {
+          if (j < values.length) {
+            final val = double.tryParse(values[j].trim());
+            if (val != null) colValues[headers[j]]?.add(val);
+          }
+        }
+      }
+      
+      final Map<String, double> featureMap = {};
+      final requiredColumns = [
+        "rpm_mean", "rpm_std", "coolant_mean", "coolant_max", "speed_mean", 
+        "throttle_mean", "engine_load_mean", "fuel_trim_mean", "o2_var", "battery_voltage_mean"
+      ];
+      
+      for (final col in requiredColumns) {
+        if (colValues.containsKey(col) && colValues[col]!.isNotEmpty) {
+          final sum = colValues[col]!.reduce((a, b) => a + b);
+          featureMap[col] = sum / colValues[col]!.length; // Mean
+        }
+      }
+      return featureMap;
+    } catch (e) {
+      debugPrint('[OBD] CSV parsing error: $e');
+      return {};
     }
   }
 
@@ -144,8 +222,10 @@ class OBDController extends ChangeNotifier {
     metrics.dispose();
     dtcCodes.dispose();
     isUploading.dispose();
+    uploadedFileName.dispose();
     predictionResult.dispose();
     uploadError.dispose();
+    isPredicting.dispose();
     super.dispose();
   }
 }

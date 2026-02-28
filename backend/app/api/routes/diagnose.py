@@ -8,12 +8,16 @@ from app.api.schemas.request import DiagnosisRequest
 from app.api.schemas.response import DiagnosisResponse, DiagnosedIssue, SuppressionInfo
 from app.core.config import settings
 from app.utils.suppression import apply_suppression
+from app.services.fusion_service import fuse_predictions
+from app.services.confidence_service import evaluate_confidence
 
 router = APIRouter(prefix="/api", tags=["diagnosis"])
 
 
-def is_valid_complaint(text: str) -> bool:
+def is_valid_complaint(text: str | None) -> bool:
     """Validate that the text complaint meets minimum quality standards."""
+    if text is None:
+        return False
     stripped = text.strip()
     
     # Reject inputs shorter than 8 characters
@@ -37,85 +41,74 @@ def is_valid_complaint(text: str) -> bool:
     return True
 
 
-@router.post("/diagnose", response_model=DiagnosisResponse)
+@router.post("/diagnose")
 async def diagnose_complaint(request: DiagnosisRequest, req: Request):
     """
-    Diagnose automotive fault based on natural language complaint.
-    
-    Args:
-        request: DiagnosisRequest containing the complaint text
-        req: FastAPI request object to access app.state
-        
-    Returns:
-        DiagnosisResponse with top-3 predictions, confidence scores, and suppression info
-        JSONResponse (400) if input validation fails
-        
-    Raises:
-        HTTPException: If model is not loaded
+    Diagnose automotive fault based on natural language complaint and optional OBD data.
     """
-    # Retrieve predictor from request.app.state.predictor
     predictor = req.app.state.predictor
+    obd_service = getattr(req.app.state, "obd_service", None)
     
-    # If predictor is None, raise HTTPException
-    if predictor is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Model not loaded"
-        )
-        
     # Strong input validation before hitting the ML model
-    if not is_valid_complaint(request.complaint):
+    if not is_valid_complaint(request.complaint) and not request.obd_data:
         return JSONResponse(
             status_code=400,
-            content={"error": "Please enter a valid vehicle complaint."}
+            content={
+                "error": "Please enter a valid vehicle complaint or upload OBD data."
+            }
         )
     
-    # Call predictor.predict() to get raw predictions
-    raw_predictions = predictor.predict(request.complaint)
-    
-    # Apply suppression
-    final_predictions, suppression_info = apply_suppression(
-        raw_predictions,
-        unknown_threshold=settings.unknown_suppression_threshold
-    )
-    
-    # Build issues list from final_predictions
-    issues = []
-    for label, confidence in final_predictions:
-        # Determine severity based on confidence
-        severity = "critical" if confidence >= 0.8 else "warning"
-        
-        issue = DiagnosedIssue(
-            name=label,
-            confidence=float(confidence),
-            severity=severity
-        )
-        issues.append(issue)
-    
-    # Create SuppressionInfo from suppression_info dict
-    suppression_applied = SuppressionInfo(
-        unknown_suppressed=suppression_info["unknown_suppressed"],
-        other_suppressed=suppression_info["other_suppressed"]
-    )
-    
-    # Hybrid Confidence Handling
-    highest_confidence = final_predictions[0][1] if len(final_predictions) > 0 else 0.0
-    second_confidence = final_predictions[1][1] if len(final_predictions) > 1 else 0.0
-    
-    # Low confidence if the top score is weak, OR if the model is torn between the top two
-    low_confidence = (highest_confidence < 0.40) or ((highest_confidence - second_confidence) < 0.10)
-    
-    message = (
-        "The prediction confidence is low. Please provide more details about the issue."
-        if low_confidence else None
-    )
-    
-    # Return DiagnosisResponse with current UTC ISO timestamp
-    return DiagnosisResponse(
-        issues=issues,
-        timestamp=datetime.now(timezone.utc),
-        suppression_applied=suppression_applied,
-        low_confidence=low_confidence,
-        message=message
-    )
+    # 1. Call NLP Predictor
+    nlp_preds = []
+    if predictor and request.complaint:
+        try:
+            raw_nlp = predictor.predict(request.complaint)
+            nlp_preds, _ = apply_suppression(
+                raw_nlp,
+                unknown_threshold=settings.unknown_suppression_threshold
+            )
+        except Exception:
+            pass  # Handle gracefully, continue with available modality
 
+    # 2. Call OBD Predictor
+    obd_preds = []
+    if obd_service and request.obd_data:
+        try:
+            # obd returns [{"fault": label, "confidence": prob}, ...]
+            obd_raw = obd_service.predict_top_faults(request.obd_data, top_n=3)
+            obd_preds = [(item["fault"], item["confidence"]) for item in obd_raw]
+        except Exception:
+            pass  # Handle gracefully
+
+    # 3. Call Fusion Service
+    try:
+        fused_result = fuse_predictions(nlp_preds, obd_preds)
+    except Exception:
+        fused_result = {
+            "predictions": [],
+            "highest_confidence": 0.0,
+            "weights": {
+                "nlp_weight": 0.0,
+                "obd_weight": 0.0
+            }
+        }
+
+    # 4. Call Confidence Service
+    try:
+        confidence_result = evaluate_confidence(fused_result)
+    except Exception:
+        confidence_result = {
+            "low_confidence": True,
+            "confidence_gap": 0.0,
+            "message": "System confidence evaluation unavailable."
+        }
+
+    # Return response exactly as specified
+    return {
+        "predictions": fused_result.get("predictions", []),
+        "highest_confidence": float(fused_result.get("highest_confidence", 0.0)),
+        "weights": fused_result.get("weights", {"nlp_weight": 0.0, "obd_weight": 0.0}),
+        "low_confidence": bool(confidence_result.get("low_confidence", True)),
+        "confidence_gap": float(confidence_result.get("confidence_gap", 0.0)),
+        "message": confidence_result.get("message")
+    }

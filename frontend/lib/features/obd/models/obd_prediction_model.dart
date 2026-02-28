@@ -20,10 +20,12 @@ class OBDFaultPrediction {
 class OBDPredictionResult {
   final String source;
   final List<OBDFaultPrediction> topFaults;
+  final Map<String, dynamic>? extractedFeatures;
 
   const OBDPredictionResult({
     required this.source,
     required this.topFaults,
+    this.extractedFeatures,
   });
 
   factory OBDPredictionResult.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class OBDPredictionResult {
       topFaults: faultsJson
           .map((e) => OBDFaultPrediction.fromJson(e as Map<String, dynamic>))
           .toList(),
+      extractedFeatures: json['extracted_features'] as Map<String, dynamic>?,
     );
   }
 }

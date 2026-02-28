@@ -12,16 +12,32 @@ class DiagnosisResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (diagnosisResult.issues.isEmpty) {
-      return const SizedBox.shrink();
+    // 2️⃣ If predictions.length == 0
+    if (diagnosisResult.predictions.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+          child: Text(
+             "Unable to confidently detect a fault. Please provide more details.",
+            style: TextStyle(
+              color: DiagnoseTheme.textSecondary,
+              fontSize: 15,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
     }
 
-    final issues = diagnosisResult.issues;
+    final predictions = diagnosisResult.predictions;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (diagnosisResult.lowConfidence) ...[
+        // 3️⃣ If lowConfidence == true
+        if (diagnosisResult.lowConfidence)
           Container(
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.only(bottom: 12),
@@ -37,7 +53,7 @@ class DiagnosisResultWidget extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    diagnosisResult.message ?? 'Confidence is low. Please provide more details.',
+                    "Prediction confidence is low. Please provide more details.",
                     style: TextStyle(
                       color: Colors.orange.shade900,
                       fontSize: 14,
@@ -49,12 +65,12 @@ class DiagnosisResultWidget extends StatelessWidget {
               ],
             ),
           ),
-        ],
-        const SizedBox(height: 8),
-        ...issues.asMap().entries.map((entry) {
+        
+        // 4️⃣ Always render top 3 predictions
+        ...predictions.asMap().entries.map((entry) {
           final index = entry.key;
           final issue = entry.value;
-          final isLastItem = index == issues.length - 1;
+          final isLastItem = index == predictions.length - 1;
           return _IssueItem(
             issue: issue,
             index: index,

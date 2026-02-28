@@ -158,9 +158,8 @@ class UnifiedCard extends StatelessWidget {
                             ],
                           ),
                         )
-                      // 3. Else if diagnosisResult exists and has issues → show diagnosis results
-                      else if (controller.diagnosisResult != null &&
-                          controller.diagnosisResult!.issues.isNotEmpty)
+                      // 3. Else if diagnosisResult exists -> let the widget handle its UI
+                      else if (controller.diagnosisResult != null)
                         DiagnosisResultWidget(
                           diagnosisResult: controller.diagnosisResult!,
                         ),

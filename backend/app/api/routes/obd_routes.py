@@ -101,4 +101,5 @@ async def predict_obd_faults(
     return {
         "source": "OBD",
         "top_faults": top_faults,
+        "extracted_features": feature_dict,
     }

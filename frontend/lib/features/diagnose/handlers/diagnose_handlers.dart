@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import '../controllers/diagnose_controller.dart';
 import '../../../services/diagnosis_service.dart';
@@ -26,67 +27,61 @@ class DiagnoseHandlers {
     // Text is automatically updated via controller
   }
 
-  Future<void> onSend() async {
+  Future<void> onSend(BuildContext context) async {
     final message = controller.messageController.text.trim();
 
     if (message.isEmpty) {
       return;
     }
 
-    // Update the complaint field with the message that was sent
     controller.complaintController.text = message;
     controller.setDisplayedComplaint(message);
-    controller.setMessageSent(
-      true,
-    ); // Mark message as sent to keep card expanded
+    controller.setMessageSent(true);
 
-    // Clear the message input immediately
     controller.messageController.clear();
-
-    // Set loading state
     controller.setLoading(true);
 
     try {
-      // Send to backend - use the message as the complaint for diagnosis
-      final diagnosisResult = await _diagnosisService.diagnoseComplaint(
-        message,
-      );
+      final diagnosisResult = await _diagnosisService.diagnoseComplaint(message);
 
-      // Sort issues by confidence (highest first)
-      final sortedIssues =
-          diagnosisResult.issues.toList()
-            ..sort((a, b) => b.confidence.compareTo(a.confidence));
+      final sortedIssues = diagnosisResult.predictions.toList()
+        ..sort((a, b) => b.confidence.compareTo(a.confidence));
 
+      // Re-pack sorted predictions into result
       final sortedResult = DiagnosisResult(
-        issues: sortedIssues,
-        timestamp: diagnosisResult.timestamp,
-        suppressionApplied: diagnosisResult.suppressionApplied,
+        predictions: sortedIssues,
+        highestConfidence: diagnosisResult.highestConfidence,
+        weights: diagnosisResult.weights,
         lowConfidence: diagnosisResult.lowConfidence,
+        confidenceGap: diagnosisResult.confidenceGap,
         message: diagnosisResult.message,
       );
 
       controller.setDiagnosisResult(sortedResult);
 
-      // Append to diagnosis history
-      if (sortedResult.issues.isNotEmpty) {
+      if (sortedResult.predictions.isNotEmpty) {
         appState.addDiagnosisHistoryEntry(
           DiagnosisHistoryEntry(
             complaintText: message,
-            primaryFaultName: sortedResult.issues.first.name,
-            confidence: sortedResult.issues.first.confidence,
-            timestamp: sortedResult.timestamp,
+            primaryFaultName: sortedResult.predictions.first.name,
+            confidence: sortedResult.predictions.first.confidence,
+            timestamp: DateTime.now(),
           ),
         );
       }
     } catch (e) {
-      // Stop loading state and set error message
       controller.setLoading(false);
       if (e is DiagnosisException && e.statusCode == 400) {
-        controller.setError(e.message);
+        // Do not set error text in card, just show snackbar
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter a valid vehicle complaint.')),
+          );
+        }
       } else {
         controller.setError('Backend not connected');
       }
-      print('Diagnosis error: $e');
+      debugPrint('Diagnosis error: $e');
     }
   }
 
