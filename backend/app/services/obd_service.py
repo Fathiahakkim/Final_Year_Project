@@ -91,7 +91,11 @@ class OBDService:
         # Build feature vector in the order the model was trained on
         X = np.array([[feature_dict[f] for f in self.feature_list]])
 
+        import time
+        start = time.time()
         probabilities = self.model.predict_proba(X)[0]
+        end = time.time()
+        print("OBD Inference Time:", (end - start) * 1000, "ms")
 
         # Pair labels with probabilities and sort descending
         label_probs = sorted(

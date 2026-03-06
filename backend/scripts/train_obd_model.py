@@ -4,7 +4,7 @@ import joblib
 import os
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 from sklearn.preprocessing import LabelEncoder
 
 # ----------------------------
@@ -89,8 +89,12 @@ print(classification_report(y_val_enc, val_preds, target_names=label_encoder.cla
 
 test_preds = model.predict(X_test)
 test_acc = accuracy_score(y_test_enc, test_preds)
+macro_f1 = f1_score(y_test_enc, test_preds, average='macro')
+weighted_f1 = f1_score(y_test_enc, test_preds, average='weighted')
 
 print("\nTest Accuracy:", test_acc)
+print("Macro F1:", macro_f1)
+print("Weighted F1:", weighted_f1)
 print("\nTest Classification Report:\n")
 print(classification_report(y_test_enc, test_preds, target_names=label_encoder.classes_))
 

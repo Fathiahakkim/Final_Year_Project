@@ -21,6 +21,9 @@ async def lifespan(app: FastAPI):
     Lifespan context manager for startup and shutdown events.
     Loads ML model on startup and stores it in app.state.
     """
+    import time
+    start = time.time()
+
     # Startup: Load predictor
     logger.info("Loading ML models...")
     try:
@@ -49,6 +52,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Unexpected error loading OBD model: {e}")
         app.state.obd_service = None
+
+    end = time.time()
+    print("Total Model Load Time:", round(end - start, 3), "seconds")
 
     yield
     

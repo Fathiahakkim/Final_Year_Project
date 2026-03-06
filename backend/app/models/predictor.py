@@ -120,8 +120,12 @@ class Predictor:
         ).to(self.device)
 
         # Run inference (no gradient computation needed)
+        import time
+        start = time.time()
         with torch.no_grad():
             logits = self.model(**inputs).logits
+        end = time.time()
+        print("Inference Time:", (end - start) * 1000, "ms")
 
         probabilities = torch.sigmoid(logits)[0].cpu().numpy()
 
