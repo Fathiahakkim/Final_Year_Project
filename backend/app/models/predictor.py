@@ -85,7 +85,10 @@ class Predictor:
         if not cleaned_text or not cleaned_text.strip():
             raise ValueError("Text is empty after cleaning")
         
-        payload = {"inputs": cleaned_text}
+        payload = {
+            "inputs": cleaned_text,
+            "options": {"wait_for_model": True}
+        }
         
         HF_TOKEN = os.getenv("HF_TOKEN")
         headers = {
