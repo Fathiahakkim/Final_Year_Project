@@ -91,6 +91,7 @@ class Predictor:
         }
         
         HF_TOKEN = os.getenv("HF_TOKEN")
+        print("HF_TOKEN loaded:", HF_TOKEN is not None)
         headers = {
             "Authorization": f"Bearer {HF_TOKEN}",
             "Content-Type": "application/json"
