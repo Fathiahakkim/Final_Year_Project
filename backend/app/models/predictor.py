@@ -18,7 +18,7 @@ class Predictor:
         """
         Initialize predictor by setting up HuggingFace API endpoint.
         """
-        self.api_url = "https://api-inference.huggingface.co/models/Anshi2003/distilbert-model"
+        self.api_url = "https://router.huggingface.co/hf-inference/models/Anshi2003/distilbert-model"
         # Class labels in EXACT training order
         self.classes_ = [
             "AIR",
@@ -89,7 +89,8 @@ class Predictor:
         
         HF_TOKEN = os.getenv("HF_TOKEN")
         headers = {
-            "Authorization": f"Bearer {HF_TOKEN}"
+            "Authorization": f"Bearer {HF_TOKEN}",
+            "Content-Type": "application/json"
         }
         
         start = time.time()
@@ -99,7 +100,7 @@ class Predictor:
                     self.api_url, 
                     headers=headers, 
                     json=payload, 
-                    timeout=30.0
+                    timeout=60.0
                 )
                 response.raise_for_status()
                 result = response.json()
