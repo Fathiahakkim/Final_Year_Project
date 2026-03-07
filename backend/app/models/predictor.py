@@ -110,8 +110,8 @@ class Predictor:
         print("Inference Time:", (end - start) * 1000, "ms")
         
         predictions = []
-        if isinstance(result, list) and len(result) > 0 and isinstance(result[0], list):
-            items = result[0]
+        if isinstance(result, list) and len(result) > 0:
+            items = result[0] if isinstance(result[0], list) else result
             for item in items:
                 label_str = item.get("label", "")
                 score = float(item.get("score", 0.0))
