@@ -17,6 +17,7 @@ from typing import Any, Dict, List
 
 import joblib
 import numpy as np
+from huggingface_hub import hf_hub_download
 
 logger = logging.getLogger(__name__)
 
@@ -38,18 +39,13 @@ class OBDService:
             ``obd_label_encoder.joblib``, and ``obd_features.joblib``.
             Defaults to ``<project_root>/models/obd/``.
         """
-        if model_dir is None:
-            model_dir = (
-                Path(__file__).resolve().parent.parent.parent / "models" / "obd"
-            )
-        else:
-            model_dir = Path(model_dir)
-
-        model_path = model_dir / "obd_rf_model.joblib"
-        encoder_path = model_dir / "obd_label_encoder.joblib"
-        features_path = model_dir / "obd_features.joblib"
+        repo_id = "Anshi2003/obd-rf-model"
 
         try:
+            model_path = hf_hub_download(repo_id=repo_id, filename="obd_rf_model.joblib")
+            encoder_path = hf_hub_download(repo_id=repo_id, filename="obd_label_encoder.joblib")
+            features_path = hf_hub_download(repo_id=repo_id, filename="obd_features.joblib")
+
             self.model: Any = joblib.load(model_path)
             self.label_encoder: Any = joblib.load(encoder_path)
             self.feature_list: List[str] = joblib.load(features_path)
