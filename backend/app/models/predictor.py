@@ -1,7 +1,6 @@
 """ML Model Predictor using HuggingFace DistilBERT for sequence classification."""
-import numpy as np
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import time
+import httpx
 from typing import List, Tuple
 from app.preprocessing.text_cleaner import clean_text
 
@@ -12,81 +11,55 @@ class ModelLoadError(Exception):
 
 
 class Predictor:
-    """ML model predictor that loads a fine-tuned DistilBERT model for automotive fault classification."""
+    """ML model predictor that uses HuggingFace Inference API for automotive fault classification."""
     
     def __init__(self):
         """
-        Initialize predictor by loading DistilBERT model from HuggingFace.
-        
-        Raises:
-            ModelLoadError: If model cannot be loaded
+        Initialize predictor by setting up HuggingFace API endpoint.
         """
-        self.model = None
-        self.tokenizer = None
-        self.classes_ = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        
-        self._load_models()
-    
-    def _load_models(self):
-        """Load DistilBERT model/tokenizer and extract class labels from model config."""
-        hf_model_name = "Anshi2003/distilbert-model"
-        try:
-            self.tokenizer = AutoTokenizer.from_pretrained(hf_model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(
-                hf_model_name
-            )
-            self.model.to(self.device)
-            self.model.eval()
-
-            # Class labels in EXACT training order
-            self.classes_ = [
-                "AIR",
-                "AIR BAGS",
-                "BACK OVER PREVENTION",
-                "DIESEL",
-                "ELECTRICAL SYSTEM",
-                "ELECTRONIC STABILITY CONTROL (ESC)",
-                "ENGINE",
-                "ENGINE AND ENGINE COOLING",
-                "EQUIPMENT",
-                "EXTERIOR LIGHTING",
-                "FORWARD COLLISION AVOIDANCE",
-                "FUEL SYSTEM",
-                "FUEL/PROPULSION SYSTEM",
-                "GASOLINE",
-                "HYBRID PROPULSION SYSTEM",
-                "HYDRAULIC",
-                "LANE DEPARTURE",
-                "LATCHES/LOCKS/LINKAGES",
-                "PARKING BRAKE",
-                "POWER TRAIN",
-                "RARE_OTHER",
-                "SEAT BELTS",
-                "SEATS",
-                "SERVICE BRAKES",
-                "STEERING",
-                "STRUCTURE",
-                "SUSPENSION",
-                "TIRES",
-                "TRACTION CONTROL SYSTEM",
-                "TRAILER HITCHES",
-                "UNKNOWN OR OTHER",
-                "VEHICLE SPEED CONTROL",
-                "VISIBILITY",
-                "VISIBILITY/WIPER",
-                "WHEELS",
-            ]
-        except Exception as e:
-            raise ModelLoadError(
-                f"Error loading DistilBERT model '{hf_model_name}': {str(e)}. "
-                f"Please ensure you have internet access or the model is "
-                f"cached locally."
-            ) from e
+        self.api_url = "https://api-inference.huggingface.co/models/Anshi2003/distilbert-model"
+        # Class labels in EXACT training order
+        self.classes_ = [
+            "AIR",
+            "AIR BAGS",
+            "BACK OVER PREVENTION",
+            "DIESEL",
+            "ELECTRICAL SYSTEM",
+            "ELECTRONIC STABILITY CONTROL (ESC)",
+            "ENGINE",
+            "ENGINE AND ENGINE COOLING",
+            "EQUIPMENT",
+            "EXTERIOR LIGHTING",
+            "FORWARD COLLISION AVOIDANCE",
+            "FUEL SYSTEM",
+            "FUEL/PROPULSION SYSTEM",
+            "GASOLINE",
+            "HYBRID PROPULSION SYSTEM",
+            "HYDRAULIC",
+            "LANE DEPARTURE",
+            "LATCHES/LOCKS/LINKAGES",
+            "PARKING BRAKE",
+            "POWER TRAIN",
+            "RARE_OTHER",
+            "SEAT BELTS",
+            "SEATS",
+            "SERVICE BRAKES",
+            "STEERING",
+            "STRUCTURE",
+            "SUSPENSION",
+            "TIRES",
+            "TRACTION CONTROL SYSTEM",
+            "TRAILER HITCHES",
+            "UNKNOWN OR OTHER",
+            "VEHICLE SPEED CONTROL",
+            "VISIBILITY",
+            "VISIBILITY/WIPER",
+            "WHEELS",
+        ]
     
     def predict(self, text: str) -> List[Tuple[str, float]]:
         """
-        Predict fault classes for a given complaint text.
+        Predict fault classes for a given complaint text via HuggingFace API.
         
         Applies text cleaning and returns the top 3 class predictions
         sorted by confidence (descending).
@@ -100,6 +73,7 @@ class Predictor:
             
         Raises:
             ValueError: If text is empty or invalid
+            RuntimeError: If the API request fails
         """
         if not text or not isinstance(text, str):
             raise ValueError("Text cannot be empty and must be a string")
@@ -110,29 +84,40 @@ class Predictor:
         if not cleaned_text or not cleaned_text.strip():
             raise ValueError("Text is empty after cleaning")
         
-        # Tokenize the cleaned text for DistilBERT
-        inputs = self.tokenizer(
-            cleaned_text,
-            return_tensors="pt",
-            truncation=True,
-            padding=True,
-            max_length=512,
-        ).to(self.device)
-
-        # Run inference (no gradient computation needed)
-        import time
+        payload = {"inputs": cleaned_text}
+        
         start = time.time()
-        with torch.no_grad():
-            logits = self.model(**inputs).logits
+        try:
+            with httpx.Client() as client:
+                response = client.post(self.api_url, json=payload, timeout=30.0)
+                response.raise_for_status()
+                result = response.json()
+        except Exception as e:
+            raise RuntimeError(f"HuggingFace API request failed: {e}")
         end = time.time()
         print("Inference Time:", (end - start) * 1000, "ms")
+        
+        predictions = []
+        if isinstance(result, list) and len(result) > 0 and isinstance(result[0], list):
+            items = result[0]
+            for item in items:
+                label_str = item.get("label", "")
+                score = float(item.get("score", 0.0))
+                
+                # Check if huggingface API returns 'LABEL_X' format
+                if label_str.startswith("LABEL_"):
+                    try:
+                        idx = int(label_str.replace("LABEL_", ""))
+                        if idx < len(self.classes_):
+                            label_str = self.classes_[idx]
+                    except ValueError:
+                        pass
+                
+                predictions.append((label_str, score))
+        else:
+            raise ValueError(f"Unexpected API response format: {result}")
 
-        probabilities = torch.sigmoid(logits)[0].cpu().numpy()
-
-        predictions = [(label, float(prob))
-                       for label, prob in zip(self.classes_, probabilities)]
-
-        # Sort remaining labels descending
+        # Sort descending
         predictions.sort(key=lambda x: x[1], reverse=True)
 
         # Return only top 3
