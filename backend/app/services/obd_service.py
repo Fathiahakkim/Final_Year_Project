@@ -1,7 +1,8 @@
 """OBD fault-detection service.
 
 Responsible for:
-  - Calling the HuggingFace Inference API for the trained RandomForest model.
+  - Loading the trained RandomForest model, label encoder, and feature list
+    **once** at application startup.
   - Accepting an aggregated feature dictionary and returning the top-N
     predicted faults with confidence scores.
 
@@ -16,7 +17,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-import httpx
+import joblib
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +27,29 @@ class OBDModelLoadError(Exception):
 
 
 class OBDService:
-    """Singleton-style service that wraps the OBD API."""
+    """Singleton-style service that wraps the OBD locally parsed RandomForest model."""
 
     def __init__(self, model_dir: str | Path | None = None) -> None:
-        """Initialize the API endpoint URL.
+        """Initialize the model natively via joblib.
 
         Parameters
         ----------
         model_dir : str | Path | None
-            Ignored. Kept for backward compatibility with the constructor signature.
+            Ignored. Overridden by explicit structure definitions
         """
-        self.api_url = "https://router.huggingface.co/hf-inference/models/Anshi2003/obd-rf-model"
-        logger.info("OBD service configured to use HuggingFace inference API.")
+        MODEL_DIR = os.path.join(os.path.dirname(__file__), "../../models")
+        # Ensure we bind correctly to backend/models/obd rather than root/models
+        # based on context, root is ../../
+        root_path = Path(__file__).resolve().parent.parent.parent
+        obd_model_dir = root_path / "models" / "obd"
+        
+        try:
+            self.model = joblib.load(obd_model_dir / "obd_rf_model.joblib")
+            self.features = joblib.load(obd_model_dir / "obd_features.joblib")
+            self.label_encoder = joblib.load(obd_model_dir / "obd_label_encoder.joblib")
+            logger.info("Local OBD service configured successfully natively via joblib.")
+        except Exception as exc:
+            raise OBDModelLoadError(f"Local OBD Model artifacts failed to load: {exc}") from exc
 
     # ── Public API ─────────────────────────────────────────────────────
     def predict_top_faults(
@@ -45,7 +57,7 @@ class OBDService:
         feature_dict: Dict[str, float],
         top_n: int = 3,
     ) -> List[Dict[str, Any]]:
-        """Return the *top_n* most likely faults with confidence scores via HuggingFace API.
+        """Return the *top_n* most likely faults with confidence scores via Local RandomForest.
 
         Parameters
         ----------
@@ -60,47 +72,22 @@ class OBDService:
             Each dict contains ``fault`` (str) and ``confidence`` (float),
             sorted by descending confidence.
         """
-        # We assume the API can handle the structured feature dictionary directly 
-        # as a singular JSON row. HuggingFace scikit-learn endpoints typically support this.
-        # Ensure it is a 2D array format or structurally uniform representation.
-        feature_vector = list(feature_dict.values())
-        payload = {"inputs": [feature_vector]}
-
         start = time.time()
         
-        HF_TOKEN = os.getenv("HF_TOKEN")
-        headers = {
-            "Authorization": f"Bearer {HF_TOKEN}"
-        }
+        feature_vector = [feature_dict[f] for f in self.features]
         
-        try:
-            with httpx.Client() as client:
-                response = client.post(
-                    self.api_url, 
-                    headers=headers, 
-                    json=payload, 
-                    timeout=60.0
-                )
-                response.raise_for_status()
-                result = response.json()
-        except Exception as exc:
-            raise RuntimeError(f"HuggingFace OBD API request failed: {exc}") from exc
+        probabilities = self.model.predict_proba([feature_vector])[0]
         end = time.time()
         
         print("OBD Inference Time:", (end - start) * 1000, "ms")
 
-        # Handle API result formatting
-        predictions = []
-        if isinstance(result, list) and len(result) > 0:
-            items = result[0] if isinstance(result[0], list) else result
-            for item in items:
-                label_str = str(item.get("label", ""))
-                score = round(float(item.get("score", 0.0)), 4)
-                predictions.append({"fault": label_str, "confidence": score})
-        else:
-            raise ValueError(f"Unexpected OBD API response format: {result}")
+        label_probs = sorted(
+            zip(self.label_encoder.classes_, probabilities),
+            key=lambda pair: pair[1],
+            reverse=True,
+        )
 
-        # Sort descending by confidence
-        predictions.sort(key=lambda x: x["confidence"], reverse=True)
-
-        return predictions[:top_n]
+        return [
+            {"fault": str(label), "confidence": round(float(prob), 4)}
+            for label, prob in label_probs[:top_n]
+        ]
