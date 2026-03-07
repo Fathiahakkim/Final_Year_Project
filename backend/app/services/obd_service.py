@@ -1,8 +1,7 @@
 """OBD fault-detection service.
 
 Responsible for:
-  - Loading the trained RandomForest model, label encoder, and feature list
-    **once** at application startup.
+  - Calling the HuggingFace Inference API for the trained RandomForest model.
   - Accepting an aggregated feature dictionary and returning the top-N
     predicted faults with confidence scores.
 
@@ -12,56 +11,33 @@ This module does NOT know about HTTP, CSV parsing, or the NLP pipeline.
 from __future__ import annotations
 
 import logging
+import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-import joblib
-import numpy as np
-from huggingface_hub import hf_hub_download
+import httpx
 
 logger = logging.getLogger(__name__)
 
 
 class OBDModelLoadError(Exception):
-    """Raised when the OBD model artifacts fail to load."""
+    """Raised when the OBD model API fails."""
 
 
 class OBDService:
-    """Singleton-style service that wraps the OBD RandomForest model."""
+    """Singleton-style service that wraps the OBD API."""
 
     def __init__(self, model_dir: str | Path | None = None) -> None:
-        """Load model artifacts from *model_dir*.
+        """Initialize the API endpoint URL.
 
         Parameters
         ----------
         model_dir : str | Path | None
-            Directory that contains ``obd_rf_model.joblib``,
-            ``obd_label_encoder.joblib``, and ``obd_features.joblib``.
-            Defaults to ``<project_root>/models/obd/``.
+            Ignored. Kept for backward compatibility with the constructor signature.
         """
-        repo_id = "Anshi2003/obd-rf-model"
-
-        try:
-            model_path = hf_hub_download(repo_id=repo_id, filename="obd_rf_model.joblib")
-            encoder_path = hf_hub_download(repo_id=repo_id, filename="obd_label_encoder.joblib")
-            features_path = hf_hub_download(repo_id=repo_id, filename="obd_features.joblib")
-
-            self.model: Any = joblib.load(model_path)
-            self.label_encoder: Any = joblib.load(encoder_path)
-            self.feature_list: List[str] = joblib.load(features_path)
-            logger.info(
-                "OBD model loaded — %d features, %d classes",
-                len(self.feature_list),
-                len(self.label_encoder.classes_),
-            )
-        except FileNotFoundError as exc:
-            raise OBDModelLoadError(
-                f"OBD model artifact not found: {exc}"
-            ) from exc
-        except Exception as exc:
-            raise OBDModelLoadError(
-                f"Failed to load OBD model artifacts: {exc}"
-            ) from exc
+        self.api_url = "https://router.huggingface.co/hf-inference/models/Anshi2003/obd-rf-model"
+        logger.info("OBD service configured to use HuggingFace inference API.")
 
     # ── Public API ─────────────────────────────────────────────────────
     def predict_top_faults(
@@ -69,7 +45,7 @@ class OBDService:
         feature_dict: Dict[str, float],
         top_n: int = 3,
     ) -> List[Dict[str, Any]]:
-        """Return the *top_n* most likely faults with confidence scores.
+        """Return the *top_n* most likely faults with confidence scores via HuggingFace API.
 
         Parameters
         ----------
@@ -84,23 +60,47 @@ class OBDService:
             Each dict contains ``fault`` (str) and ``confidence`` (float),
             sorted by descending confidence.
         """
-        # Build feature vector in the order the model was trained on
-        X = np.array([[feature_dict[f] for f in self.feature_list]])
+        # We assume the API can handle the structured feature dictionary directly 
+        # as a singular JSON row. HuggingFace scikit-learn endpoints typically support this.
+        # Ensure it is a 2D array format or structurally uniform representation.
+        feature_vector = list(feature_dict.values())
+        payload = {"inputs": [feature_vector]}
 
-        import time
         start = time.time()
-        probabilities = self.model.predict_proba(X)[0]
+        
+        HF_TOKEN = os.getenv("HF_TOKEN")
+        headers = {
+            "Authorization": f"Bearer {HF_TOKEN}"
+        }
+        
+        try:
+            with httpx.Client() as client:
+                response = client.post(
+                    self.api_url, 
+                    headers=headers, 
+                    json=payload, 
+                    timeout=60.0
+                )
+                response.raise_for_status()
+                result = response.json()
+        except Exception as exc:
+            raise RuntimeError(f"HuggingFace OBD API request failed: {exc}") from exc
         end = time.time()
+        
         print("OBD Inference Time:", (end - start) * 1000, "ms")
 
-        # Pair labels with probabilities and sort descending
-        label_probs = sorted(
-            zip(self.label_encoder.classes_, probabilities),
-            key=lambda pair: pair[1],
-            reverse=True,
-        )
+        # Handle API result formatting
+        predictions = []
+        if isinstance(result, list) and len(result) > 0:
+            items = result[0] if isinstance(result[0], list) else result
+            for item in items:
+                label_str = str(item.get("label", ""))
+                score = round(float(item.get("score", 0.0)), 4)
+                predictions.append({"fault": label_str, "confidence": score})
+        else:
+            raise ValueError(f"Unexpected OBD API response format: {result}")
 
-        return [
-            {"fault": str(label), "confidence": round(float(prob), 4)}
-            for label, prob in label_probs[:top_n]
-        ]
+        # Sort descending by confidence
+        predictions.sort(key=lambda x: x["confidence"], reverse=True)
+
+        return predictions[:top_n]

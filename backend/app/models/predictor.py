@@ -1,5 +1,6 @@
 """ML Model Predictor using HuggingFace DistilBERT for sequence classification."""
 import time
+import os
 import httpx
 from typing import List, Tuple
 from app.preprocessing.text_cleaner import clean_text
@@ -86,10 +87,20 @@ class Predictor:
         
         payload = {"inputs": cleaned_text}
         
+        HF_TOKEN = os.getenv("HF_TOKEN")
+        headers = {
+            "Authorization": f"Bearer {HF_TOKEN}"
+        }
+        
         start = time.time()
         try:
             with httpx.Client() as client:
-                response = client.post(self.api_url, json=payload, timeout=30.0)
+                response = client.post(
+                    self.api_url, 
+                    headers=headers, 
+                    json=payload, 
+                    timeout=30.0
+                )
                 response.raise_for_status()
                 result = response.json()
         except Exception as e:
