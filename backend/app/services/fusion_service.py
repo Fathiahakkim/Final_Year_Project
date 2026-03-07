@@ -21,7 +21,7 @@ def fuse_predictions(
         return {
             "predictions": [],
             "highest_confidence": 0.0,
-            "weights": {"nlp_weight": 0.0, "obd_weight": 0.0}
+            "weights": {"nlp_weight": 1.0, "obd_weight": 0.0}
         }
 
     # CASE 1: Only NLP predictions exist

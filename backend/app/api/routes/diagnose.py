@@ -85,10 +85,10 @@ async def diagnose_complaint(request: DiagnosisRequest, req: Request):
         fused_result = fuse_predictions(nlp_preds, obd_preds)
     except Exception:
         fused_result = {
-            "predictions": [],
-            "highest_confidence": 0.0,
+            "predictions": nlp_preds[:3] if nlp_preds else [],
+            "highest_confidence": float(nlp_preds[0][1]) if nlp_preds else 0.0,
             "weights": {
-                "nlp_weight": 0.0,
+                "nlp_weight": 1.0,
                 "obd_weight": 0.0
             }
         }
@@ -107,7 +107,7 @@ async def diagnose_complaint(request: DiagnosisRequest, req: Request):
     return {
         "predictions": fused_result.get("predictions", []),
         "highest_confidence": float(fused_result.get("highest_confidence", 0.0)),
-        "weights": fused_result.get("weights", {"nlp_weight": 0.0, "obd_weight": 0.0}),
+        "weights": fused_result.get("weights", {"nlp_weight": 1.0, "obd_weight": 0.0}),
         "low_confidence": bool(confidence_result.get("low_confidence", True)),
         "confidence_gap": float(confidence_result.get("confidence_gap", 0.0)),
         "message": confidence_result.get("message")
