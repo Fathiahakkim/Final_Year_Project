@@ -2,7 +2,8 @@
 
 ## Project Overview
 
-This project is an AI-powered system for detecting and diagnosing automotive faults. The system enables users to describe vehicle issues and receive intelligent fault detection and diagnostic suggestions.
+This project is an AI-powered automotive fault diagnosis system that uses NLP and machine learning to predict vehicle faults from driver complaints and OBD-II sensor data. Built using Flutter, FastAPI, and Python. This is an AI-powered system for detecting and diagnosing automotive faults. The system enables users to describe vehicle issues and receive intelligent fault detection and diagnostic suggestions.
+
 
 ## Development Approach
 
